@@ -1,0 +1,35 @@
+[project]
+name = "finpilot-ocr"
+version = "0.1.0"
+description = "Invoice document text extraction — LiteParse (primary, PaddleOCR-backed) with a full PyMuPDF+Tesseract legacy pipeline retained as an explicit rollback path (docs/invoice-ocr-plan.md's LiteParse+PaddleOCR migration). Domain logic for AI Engine's OCR stage; not infrastructure, so it lives separately from finpilot-shared."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "pymupdf==1.25.3",
+  "pytesseract==0.3.13",
+  "pillow==11.1.0",
+  # Pinned to the exact version verified live against this project's real
+  # sample documents during the migration — LiteParse is a young, fast-
+  # iterating library (PyPI 2.0.0b2 -> 2.13.0 in ~5 months), so an
+  # unpinned/loose version range here is a real regression risk, not
+  # just tidiness.
+  "liteparse==2.13.0",
+  # Document Preprocessing stage (docs/invoice-ocr-plan.md §7) — boundary
+  # detection, smart-crop, multi-document split. headless: no GUI/Qt
+  # bindings, which this server-side pipeline has no use for and which
+  # would otherwise drag in system libraries the Docker image doesn't need.
+  "opencv-python-headless==4.11.0.86",
+  "numpy==2.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ocr*"]

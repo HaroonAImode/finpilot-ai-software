@@ -1,0 +1,23 @@
+[project]
+name = "finpilot-shared"
+version = "0.1.0"
+description = "Infrastructure code shared by every FinPilot service — JWT, logging, error shapes. No domain logic."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "pyjwt==2.10.1",
+  "pydantic==2.11.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shared*"]

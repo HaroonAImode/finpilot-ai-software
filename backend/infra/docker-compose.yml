@@ -1,0 +1,613 @@
+services:
+  # The single front door (architecture §5.1). Verifies JWTs once, injects
+  # identity headers, and routes to services. Only this port needs exposing.
+  gateway:
+    build:
+      context: ..
+      dockerfile: services/gateway/Dockerfile
+    env_file:
+      - ../services/gateway/.env
+    environment:
+      AUTH_SERVICE_URL: http://auth:8001
+      SLACK_CONNECTOR_URL: http://slack-connector:8010
+      EMAIL_CONNECTOR_URL: http://email-connector:8011
+      INVOICE_SERVICE_URL: http://invoice-service:8002
+      DOCUMENTS_SERVICE_URL: http://documents-service:8013
+      VENDORS_SERVICE_URL: http://vendors-service:8006
+      TRANSACTIONS_SERVICE_URL: http://transactions-service:8003
+      HR_SERVICE_URL: http://hr-service:8004
+      PROCUREMENT_SERVICE_URL: http://procurement-service:8005
+      SETTINGS_SERVICE_URL: http://settings-service:8009
+      REPORTS_SERVICE_URL: http://reports-service:8014
+      REDIS_URL: redis://redis:6379/7
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  # Database per service (architecture report §4) — auth credentials never share
+  # a database with connector data.
+  auth-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+
+  auth:
+    build:
+      # Context is backend/ rather than the service directory because the image
+      # needs libs/shared, which lives outside the service.
+      context: ..
+      dockerfile: services/auth/Dockerfile
+    env_file:
+      - ../services/auth/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@auth-db:5432/auth_db
+      REDIS_URL: redis://redis:6379/6
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+
+  slack-connector-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: slack_connector_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d slack_connector_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - slack-connector-data:/var/lib/postgresql/data
+
+  email-connector-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: email_connector_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d email_connector_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - email-connector-data:/var/lib/postgresql/data
+
+  invoice-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: invoice_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d invoice_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - invoice-service-data:/var/lib/postgresql/data
+
+  documents-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: documents_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d documents_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - documents-service-data:/var/lib/postgresql/data
+
+  vendors-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: vendors_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vendors_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - vendors-service-data:/var/lib/postgresql/data
+
+  transactions-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: transactions_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d transactions_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - transactions-service-data:/var/lib/postgresql/data
+
+  hr-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: hr_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hr_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - hr-service-data:/var/lib/postgresql/data
+
+  procurement-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: procurement_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d procurement_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - procurement-service-data:/var/lib/postgresql/data
+
+  settings-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: settings_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d settings_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - settings-service-data:/var/lib/postgresql/data
+
+  reports-service-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: reports_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d reports_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - reports-service-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/slack-connector-files &&
+      mc mb --ignore-existing local/email-connector-files &&
+      mc mb --ignore-existing local/invoice-service-files &&
+      mc mb --ignore-existing local/documents-service-files"
+
+  slack-connector:
+    build:
+      context: ..
+      dockerfile: services/slack-connector/Dockerfile
+    env_file:
+      - ../services/slack-connector/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@slack-connector-db:5432/slack_connector_db
+      REDIS_URL: redis://redis:6379/3
+      CELERY_BROKER_URL: redis://redis:6379/4
+      CELERY_RESULT_BACKEND: redis://redis:6379/5
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: slack-connector-files
+      # Behind the Gateway the X-Company-ID header is written from verified JWT
+      # claims, so the unverified dev fallback is no longer needed.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      slack-connector-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "8010:8010"
+
+  slack-connector-worker:
+    build:
+      context: ..
+      dockerfile: services/slack-connector/Dockerfile
+    command: celery -A app.worker.celery_app worker --loglevel=INFO --pool=solo --concurrency=1
+    env_file:
+      - ../services/slack-connector/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@slack-connector-db:5432/slack_connector_db
+      REDIS_URL: redis://redis:6379/3
+      CELERY_BROKER_URL: redis://redis:6379/4
+      CELERY_RESULT_BACKEND: redis://redis:6379/5
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: slack-connector-files
+    depends_on:
+      slack-connector-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  email-connector:
+    build:
+      context: ..
+      dockerfile: services/email-connector/Dockerfile
+    env_file:
+      - ../services/email-connector/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@email-connector-db:5432/email_connector_db
+      REDIS_URL: redis://redis:6379/8
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: email-connector-files
+      # Behind the Gateway the X-Company-ID header is written from verified JWT
+      # claims, so the unverified dev fallback is no longer needed — same
+      # reasoning as slack-connector's, more important here since a mailbox
+      # is more sensitive than a Slack workspace.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      email-connector-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "8011:8011"
+
+  email-connector-worker:
+    build:
+      context: ..
+      dockerfile: services/email-connector/Dockerfile
+    # -B embeds Celery Beat (the periodic-task scheduler) in this same
+    # process. Fine for one worker instance; do NOT add -B if this service
+    # is ever scaled to more than one replica — every replica would run its
+    # own scheduler and queue every account's sync N times per tick. Split
+    # beat into its own single-replica service first.
+    command: celery -A app.worker.celery_app worker -B --loglevel=INFO --pool=solo --concurrency=1
+    env_file:
+      - ../services/email-connector/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@email-connector-db:5432/email_connector_db
+      REDIS_URL: redis://redis:6379/8
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: email-connector-files
+    depends_on:
+      email-connector-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  paddleocr:
+    # LiteParse+PaddleOCR migration (docs/invoice-ocr-plan.md) — the
+    # primary OCR engine, called by ai-engine's LiteParse client as an
+    # external OCR server via LiteParse's own documented OCR_API_SPEC.md
+    # contract. Internal-only, not registered through the Gateway, exactly
+    # like ai-engine itself. Models are baked into the image at build time
+    # (see the Dockerfile) — no runtime download, no hidden manual step.
+    build:
+      context: ..
+      dockerfile: services/paddleocr/Dockerfile
+    env_file:
+      - ../services/paddleocr/.env
+    ports:
+      - "8008:8008"
+
+  ai-engine:
+    # Phase 2b (docs/invoice-ocr-plan.md) — invoice OCR/structuring only, no
+    # AI Chat Assistant/Insights yet (architecture report §5.8). Stateless:
+    # no database, no queue. Not registered through the Gateway — this is
+    # an internal endpoint Invoice Service calls directly (see
+    # invoice-service's AI_ENGINE_URL below), the same way
+    # email-connector/slack-connector call INVOICE_SERVICE_URL directly.
+    build:
+      context: ..
+      dockerfile: services/ai-engine/Dockerfile
+    env_file:
+      - ../services/ai-engine/.env
+    environment:
+      PADDLEOCR_SERVICE_URL: http://paddleocr:8008
+    depends_on:
+      - paddleocr
+    ports:
+      - "8007:8007"
+
+  invoice-service:
+    # Phase 3 (docs/invoice-ocr-plan.md) — upload/scan, Invoice/InvoiceItem/
+    # AIJob CRUD, wired to AI Engine over plain HTTP (no RabbitMQ; see
+    # architecture report §11b's "target, not built" note, already
+    # established for the connectors' own Invoice Service bridge). This is
+    # the first point that bridge actually resolves to a real service.
+    build:
+      context: ..
+      dockerfile: services/invoice-service/Dockerfile
+    env_file:
+      - ../services/invoice-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@invoice-service-db:5432/invoice_service_db
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: invoice-service-files
+      AI_ENGINE_URL: http://ai-engine:8007
+      # Best-effort hand-off on send-to-accounting (§5.4) — no hard
+      # depends_on, same reasoning as AI_ENGINE_URL above: a purchase
+      # invoice's status flip must not block on a downstream service.
+      TRANSACTIONS_SERVICE_URL: http://transactions-service:8003
+      # Sales-invoice PDF branding (logo, placement, template) —
+      # best-effort, same reasoning as above.
+      SETTINGS_SERVICE_URL: http://settings-service:8009
+      # Behind the Gateway the X-Company-ID header is written from verified
+      # JWT claims, so the unverified dev fallback is no longer needed —
+      # same reasoning as every other connector/service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      invoice-service-db:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "8002:8002"
+
+  documents-service:
+    # The browser-upload document library (docs/documents-and-vendors-plan.md
+    # §2) — the fourth source on the Documents page, alongside the Slack and
+    # Email connectors. Port 8013: 8012 stays reserved for the planned
+    # WhatsApp connector.
+    build:
+      context: ..
+      dockerfile: services/documents-service/Dockerfile
+    env_file:
+      - ../services/documents-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@documents-service-db:5432/documents_service_db
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: documents-service-files
+      INVOICE_SERVICE_URL: http://invoice-service:8002
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      documents-service-db:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "8013:8013"
+
+  vendors-service:
+    # Architecture report §5.7. Gives suppliers a stable identity so invoice
+    # matching stops relying on free-text OCR output (see
+    # docs/documents-and-vendors-plan.md §3). No MinIO dependency: this
+    # service stores no files. Spend is derived from Invoice Service on read.
+    build:
+      context: ..
+      dockerfile: services/vendors-service/Dockerfile
+    env_file:
+      - ../services/vendors-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@vendors-service-db:5432/vendors_service_db
+      INVOICE_SERVICE_URL: http://invoice-service:8002
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      vendors-service-db:
+        condition: service_healthy
+    ports:
+      - "8006:8006"
+
+  transactions-service:
+    # Architecture report §5.4 — Expense ledger and Dashboard KPIs. No MinIO
+    # dependency: this service stores no files. Revenue is deliberately not
+    # owned here — it stays Invoice Service's own scanned-sales ledger
+    # (Revenue Manager), read over HTTP for the revenue-side KPIs/charts.
+    # See docs/superpowers/specs/2026-08-29-transactions-service-design.md.
+    build:
+      context: ..
+      dockerfile: services/transactions-service/Dockerfile
+    env_file:
+      - ../services/transactions-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@transactions-service-db:5432/transactions_service_db
+      INVOICE_SERVICE_URL: http://invoice-service:8002
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      transactions-service-db:
+        condition: service_healthy
+    ports:
+      - "8003:8003"
+
+  hr-service:
+    # Architecture report §5.5 — employee directory and payroll processing.
+    # No MinIO dependency: this service stores no files. Processing a
+    # payroll run books a matching Expense in Transactions Service,
+    # best-effort — same pattern Invoice Service's send-to-accounting hook
+    # uses. See docs/superpowers/specs/2026-08-29-hr-service-design.md.
+    build:
+      context: ..
+      dockerfile: services/hr-service/Dockerfile
+    env_file:
+      - ../services/hr-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@hr-service-db:5432/hr_service_db
+      TRANSACTIONS_SERVICE_URL: http://transactions-service:8003
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      hr-service-db:
+        condition: service_healthy
+    ports:
+      - "8004:8004"
+
+  procurement-service:
+    # Architecture report §5.6 — purchase requests, purchase orders, and
+    # vendor quote comparison. No MinIO dependency: this service stores no
+    # files. No other service dependency either — unlike HR/Invoice's
+    # booking hooks, nothing here calls out to another service.
+    build:
+      context: ..
+      dockerfile: services/procurement-service/Dockerfile
+    env_file:
+      - ../services/procurement-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@procurement-service-db:5432/procurement_service_db
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      procurement-service-db:
+        condition: service_healthy
+    ports:
+      - "8005:8005"
+
+  settings-service:
+    # Architecture report §5.10 — company profile, tax configuration, AI
+    # automation toggles. No MinIO dependency, no other service
+    # dependency: every row is a lazily-created, company-scoped singleton
+    # with defaults (see routes/*.py's own _get_or_create).
+    build:
+      context: ..
+      dockerfile: services/settings-service/Dockerfile
+    env_file:
+      - ../services/settings-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@settings-service-db:5432/settings_service_db
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      settings-service-db:
+        condition: service_healthy
+    ports:
+      - "8009:8009"
+
+  reports-service:
+    # Architecture report §5.9, reassigned from port 8008 (taken by
+    # PaddleOCR) to 8014. Reads Invoice/Transactions/Settings Service on
+    # every report generation — no queue, no MinIO: generation is
+    # synchronous (nothing here is OCR-slow) and PDF/Excel are rendered
+    # on demand from a stored JSON payload rather than pre-rendered files.
+    # See docs/superpowers/specs/2026-08-29-reports-service-design.md.
+    build:
+      context: ..
+      dockerfile: services/reports-service/Dockerfile
+    env_file:
+      - ../services/reports-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@reports-service-db:5432/reports_service_db
+      INVOICE_SERVICE_URL: http://invoice-service:8002
+      TRANSACTIONS_SERVICE_URL: http://transactions-service:8003
+      SETTINGS_SERVICE_URL: http://settings-service:8009
+      # Behind the Gateway, X-Company-ID is written from verified JWT claims,
+      # so the unverified dev fallback is not needed — same as every other
+      # service in this compose file.
+      TRUST_COMPANY_HEADER: "false"
+    depends_on:
+      reports-service-db:
+        condition: service_healthy
+    ports:
+      - "8014:8014"
+
+volumes:
+  auth-data:
+  slack-connector-data:
+  email-connector-data:
+  invoice-service-data:
+  documents-service-data:
+  vendors-service-data:
+  transactions-service-data:
+  hr-service-data:
+  procurement-service-data:
+  settings-service-data:
+  reports-service-data:
+  redis-data:
+  minio-data:

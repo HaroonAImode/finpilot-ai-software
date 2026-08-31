@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+# Ignore every .env variant (.env.local, .env.bak, .env.prod …) — a bare ".env"
+# rule leaves backups and per-environment copies fully committable.
+.env
+.env.*
+!.env.example
+*.egg-info
+dist/
+build/

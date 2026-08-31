@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=75.0.0,<76.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finpilot-paddleocr"
+version = "0.1.0"
+description = "FinPilot PaddleOCR service — the primary OCR engine for the LiteParse+PaddleOCR migration (docs/invoice-ocr-plan.md). Implements LiteParse's own documented OCR_API_SPEC.md contract (POST /ocr, file+language in, {text,bbox,confidence} out) so LiteParse can call this service directly as an external OCR server, no bespoke integration invented."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi==0.115.12",
+  "uvicorn[standard]==0.34.2",
+  "pydantic==2.11.3",
+  "pydantic-settings==2.8.1",
+  "python-dotenv==1.1.0",
+  "python-multipart==0.0.20",
+  # Pinned to the exact versions verified live during the migration — a
+  # heavy, fast-moving deep-learning stack, not a library where an
+  # unpinned/loose range is safe to leave to chance.
+  "paddleocr==3.7.0",
+  "paddlepaddle==3.3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
+  "httpx==0.28.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

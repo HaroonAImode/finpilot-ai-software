@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=75.0.0,<76.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finpilot-settings-service"
+version = "0.1.0"
+description = "FinPilot Settings Service — company profile, tax configuration, AI automation toggles"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi==0.115.12",
+  "uvicorn[standard]==0.34.2",
+  "sqlalchemy==2.0.40",
+  "alembic==1.15.2",
+  "asyncpg==0.30.0",
+  "pydantic==2.11.3",
+  "pydantic-settings==2.8.1",
+  "httpx==0.28.1",
+  "python-dotenv==1.1.0",
+  "finpilot-shared",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
+  "aiosqlite==0.21.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

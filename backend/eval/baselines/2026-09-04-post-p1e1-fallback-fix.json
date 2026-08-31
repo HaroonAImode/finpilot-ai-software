@@ -1,0 +1,285 @@
+{
+  "documents": {
+    "1WhatsApp Image 2026-09-02 at 9.28.03 AM.jpeg": {
+      "category": "INCORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "2121WhatsApp Image 2026-09-02 at 9.28.11 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "UNVERIFIABLE",
+      "total": "MISSING",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "223WhatsApp Image 2026-09-02 at 9.28.11 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "2322WhatsApp Image 2026-09-02 at 9.28.08 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "322WhatsApp Image 2026-09-02 at 9.28.11 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "MISSING",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "323232WhatsApp Image 2026-09-02 at 9.28.08 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "3232WhatsApp Image 2026-09-02 at 9.28.11 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "34323WhatsApp Image 2026-09-02 at 9.28.10 AM.jpeg": {
+      "category": "MISSING",
+      "document_type": "CORRECT",
+      "invoice_date": "MISSING",
+      "total": "MISSING",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "34343WhatsApp Image 2026-09-02 at 9.28.08 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "3WhatsApp Image 2026-09-02 at 9.23.39 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "3WhatsApp Image 2026-09-02 at 9.28.03 AM.jpeg": {
+      "category": "FALSE_POSITIVE",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "43343WhatsApp Image 2026-09-02 at 9.28.10 AM.jpeg": {
+      "category": "INCORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "4434343WhatsApp Image 2026-09-02 at 9.28.10 AM.jpeg": {
+      "category": "FALSE_POSITIVE",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "454WhatsApp Image 2026-09-02 at 9.28.07 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "UNVERIFIABLE",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "5454WhatsApp Image 2026-09-02 at 9.28.09 AM.jpeg": {
+      "category": "UNVERIFIABLE",
+      "document_type": "UNVERIFIABLE",
+      "invoice_date": "UNVERIFIABLE",
+      "total": "UNVERIFIABLE",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "5WhatsApp Image 2026-09-02 at 9.24.13 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "MISSING",
+      "total": "MISSING",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "5WhatsApp Image 2026-09-02 at 9.28.04 9AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "5WhatsApp Image 2026-09-02 at 9.28.04 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "655443WhatsApp Image 2026-09-02 at 9.28.09 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "676WhatsApp Image 2026-09-02 at 9.28.07 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "6WhatsApp Image 2026-09-02 at 9.23.39 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "6WhatsApp Image 2026-09-02 at 9.24.14 AM.jpeg": {
+      "category": "UNVERIFIABLE",
+      "document_type": "UNVERIFIABLE",
+      "invoice_date": "UNVERIFIABLE",
+      "total": "UNVERIFIABLE",
+      "transactional": "UNVERIFIABLE",
+      "vendor": "UNVERIFIABLE"
+    },
+    "6r44343WhatsApp Image 2026-09-02 at 9.28.10 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "71WhatsApp Image 2026-09-02 at 9.28.03 AM.jpeg": {
+      "category": "FALSE_POSITIVE",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "7676WhatsApp Image 2026-09-02 at 9.28.08 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "878WhatsApp Image 2026-09-02 at 9.28.07 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "9733WhatsApp Image 2026-09-02 at 9.28.09 AM.jpeg": {
+      "category": "MISSING",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "9897WhatsApp Image 2026-09-02 at 9.28.07 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "MISSING",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "WhatsApp Image 2026-09-02 at 9.23.38 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "WhatsApp Image 2026-09-02 at 9.23sa.38 AM.jpeg": {
+      "category": "INCORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "WhatsApp Image 2026-09-02 at 9.28.02 AM.jpeg": {
+      "category": "INCORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "CORRECT",
+      "total": "INCORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "WhatsApp Image 2026-09-02 at 9.28.03 AM.jpeg": {
+      "category": "INCORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "WhatsApp Image 2026-09-02 at 9.28.04 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "CORRECT",
+      "invoice_date": "CORRECT",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "CORRECT"
+    },
+    "WhatsApp Image 22026-09-02 at 9.23.38 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "INCORRECT",
+      "total": "MISSING",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    },
+    "aaWhatsApp Image 2026-09-02 at 9.23.39 AM.jpeg": {
+      "category": "CORRECT",
+      "document_type": "MISSING",
+      "invoice_date": "UNVERIFIABLE",
+      "total": "CORRECT",
+      "transactional": "CORRECT",
+      "vendor": "INCORRECT"
+    }
+  },
+  "missing_documents": []
+}

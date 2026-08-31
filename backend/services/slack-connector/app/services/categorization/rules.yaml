@@ -1,0 +1,124 @@
+# Categorization rules for files based on filename, title, and channel name
+# Priority: filename > title > channel_name
+# Each rule has: patterns (list of regex patterns to match), category, confidence (0.0-1.0)
+
+categories:
+  - name: Invoices
+    confidence: 0.95
+    patterns:
+      - '(?i)(invoice|inv-|factur).*\.(pdf|xlsx?|docx?)'
+      - '(?i)(invoice|billing).*'
+    keywords:
+      - invoice
+      - invoicing
+      - billing
+
+  - name: Receipts
+    confidence: 0.95
+    patterns:
+      - '(?i)(receipt|rcpt|expense).*\.(pdf|jpg|png|jpeg)'
+      - '(?i)(receipt|expense).*'
+    keywords:
+      - receipt
+      - receipts
+      - expense
+
+  - name: Contracts
+    confidence: 0.90
+    patterns:
+      - '(?i)(contract|agreement|nda|terms|tos).*\.(pdf|docx?)'
+      - '(?i)(contract|agreement|terms).*'
+    keywords:
+      - contract
+      - agreement
+      - nda
+      - terms
+
+  - name: Project Plans
+    confidence: 0.85
+    patterns:
+      - '(?i)(plan|roadmap|project|timeline|gantt).*\.(xlsx?|pptx?|pdf)'
+      - '(?i)(project|plan|roadmap).*'
+    keywords:
+      - plan
+      - project
+      - roadmap
+      - timeline
+
+  - name: Reports
+    confidence: 0.85
+    patterns:
+      - '(?i)(report|analysis|summary|quarterly|monthly|annual).*\.(pdf|xlsx?|pptx?|docx?)'
+      - '(?i)(report|analysis).*'
+    keywords:
+      - report
+      - analysis
+      - summary
+      - quarterly
+      - monthly
+
+  - name: Presentations
+    confidence: 0.90
+    patterns:
+      - '.*\.(pptx?|key|odp)'
+      - '(?i)(presentation|slide|deck|keynote).*'
+    keywords:
+      - presentation
+      - slide
+      - deck
+      - keynote
+
+  - name: Spreadsheets & Financial
+    confidence: 0.85
+    patterns:
+      - '.*\.(xlsx?|csv|ods)'
+      - '(?i)(budget|forecast|finance|accounting|ledger|spreadsheet).*'
+    keywords:
+      - budget
+      - forecast
+      - finance
+      - accounting
+      - spreadsheet
+
+  - name: Images & Screenshots
+    confidence: 0.95
+    patterns:
+      - '.*\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|heic)'
+      - '(?i)(screenshot|screen shot|image|photo|pic).*'
+    keywords:
+      - screenshot
+      - image
+      - photo
+      - visual
+
+  - name: Bookings & Reservations
+    confidence: 0.85
+    patterns:
+      - '(?i)(booking|reservation|confirm|ticket|itinerary).*\.(pdf|xlsx?|docx?|ics)'
+      - '(?i)(booking|reservation|ticket).*'
+    keywords:
+      - booking
+      - reservation
+      - ticket
+      - itinerary
+
+  - name: Archives
+    confidence: 0.95
+    patterns:
+      - '.*\.(zip|rar|7z|tar|gz|bak)'
+    keywords:
+      - archive
+      - backup
+      - compressed
+
+  - name: Audio & Video
+    confidence: 0.95
+    patterns:
+      - '.*\.(mp3|wav|m4a|aac|flac|ogg|mp4|mov|avi|mkv|webm|m4v)'
+    keywords:
+      - audio
+      - video
+      - recording
+      - podcast
+
+minimum_confidence_threshold: 0.70

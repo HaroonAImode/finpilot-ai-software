@@ -1,0 +1,30 @@
+# Applies to every service image, because they all build with backend/ as the
+# context so they can install libs/shared.
+#
+# Docker only reads the .dockerignore at the context root, so the per-service
+# files (services/*/.dockerignore) stopped applying the moment the context moved
+# up to backend/. Without this, every build uploads every service's .venv —
+# tens of thousands of files — and appears to hang on "load build context".
+
+# Virtual environments — reinstalled inside the image
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/*.egg-info
+**/.mypy_cache
+**/.ruff_cache
+
+# Secrets must never enter an image layer
+**/.env
+**/.env.*
+!**/.env.example
+
+# Not needed at runtime
+**/tests
+**/dist
+**/build
+infra
+docs

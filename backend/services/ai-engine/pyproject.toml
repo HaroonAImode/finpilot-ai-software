@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75.0.0,<76.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finpilot-ai-engine"
+version = "0.1.0"
+description = "FinPilot AI Engine — invoice OCR/structuring (no-LLM rules pipeline, docs/invoice-ocr-plan.md). Chat assistant and insights (architecture report §5.8) are not part of Phase 2b's scope."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi==0.115.12",
+  "uvicorn[standard]==0.34.2",
+  "pydantic==2.11.3",
+  "pydantic-settings==2.8.1",
+  "python-dotenv==1.1.0",
+  "python-multipart==0.0.20",
+  "finpilot-ocr",
+  "finpilot-invoice-extraction",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
+  "httpx==0.28.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

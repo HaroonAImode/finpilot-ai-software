@@ -1,0 +1,25 @@
+[project]
+name = "finpilot-invoice-extraction"
+version = "0.1.0"
+description = "Rules-based invoice/receipt structuring — label-anchored field extraction, geometric table reconstruction, arithmetic validation, composite confidence scoring. No AI/LLM call anywhere. See docs/invoice-ocr-plan.md §2a and docs/research/Invoice_OCR_Rules_Based_Extraction_Report.md."
+requires-python = ">=3.11,<3.14"
+# finpilot-ocr (the sibling backend/libs/ocr package) is a runtime
+# dependency but deliberately not listed here as a file:// URL — pip on
+# Windows does not resolve a relative file:// path reliably. Install it
+# explicitly first: `pip install -e ../ocr` before `pip install -e .`
+# (see this package's own venv setup, or the Dockerfile once Phase 2b
+# stands up the AI Engine service around both libraries).
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["invoice_extraction*"]

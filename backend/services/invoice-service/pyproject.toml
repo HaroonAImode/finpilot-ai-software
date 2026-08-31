@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=75.0.0,<76.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finpilot-invoice-service"
+version = "0.1.0"
+description = "FinPilot Invoice Service — upload/scan, AI extraction hand-off (AI Engine), Invoice/InvoiceItem CRUD"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi==0.115.12",
+  "uvicorn[standard]==0.34.2",
+  "sqlalchemy==2.0.40",
+  "alembic==1.15.2",
+  "asyncpg==0.30.0",
+  "pydantic==2.11.3",
+  "pydantic-settings==2.8.1",
+  "httpx==0.28.1",
+  "python-dotenv==1.1.0",
+  "python-multipart==0.0.20",
+  "boto3==1.37.29",
+  # Sales-invoice PDF rendering. Pure Python on purpose: WeasyPrint/wkhtmltopdf
+  # would drag Cairo/Pango or a bundled Chromium into this image.
+  "reportlab==4.2.5",
+  "finpilot-shared",
+  # P1-E (docs/invoice-ocr-plan.md §24): category_classifier.py reuses the
+  # same generic Candidate/select_candidate primitives (invoice_extraction.
+  # candidates) the AI Engine's own vendor/invoice_date/total scoring
+  # already uses, rather than a second, competing selection mechanism.
+  # This service does not otherwise use invoice_extraction's own
+  # OCR-facing extraction code — only this one small, field-agnostic module.
+  "finpilot-invoice-extraction",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
+  "aiosqlite==0.21.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
