@@ -102,8 +102,8 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 | **HR Service** | 8004 | ✅ built | Employee directory, role and department assignments |
 | Procurement | 8005 | ✅ built | Purchase requests, purchase orders and vendor quotes |
 | Vendors | 8006 | ✅ built | Vendor management, spend tracking and reconciliation |
-| **AI Engine** | 8007 | ✅ built | Deterministic candidate selection, financial validation, vendor/total extraction |
-| **PaddleOCR** | 8008 | ✅ built | Document OCR text and bounding-box extraction service |
+| **AI Engine** | 8007 | ✅ built | LiteParse document pipeline, deterministic invoice extraction, candidate selection and financial validation |
+| **PaddleOCR** | 8008 | ✅ built | Internal OCR server for LiteParse text and bounding-box extraction |
 | **Settings** | 8009 | ✅ built | Company profile, tax configuration and automation settings |
 | **Slack Connector** | 8010 | ✅ built | Documents page, Connected Apps tab, file browser, preview, send-to-scanner |
 | **Email Connector** | 8011 | ✅ built | Gmail OAuth integration, mailbox connector and document sync |
@@ -112,6 +112,12 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 | **Reports** | 8014 | ✅ built | P&L, cash flow, tax, sales and purchase reports |
 
 Pages whose service is still `planned` render dummy data from `frontend/src/lib/data.ts`.
+
+### Invoice scanner
+
+Invoice uploads are processed through LiteParse and the internal PaddleOCR service before the
+rules-based extraction and validation pipeline runs. This keeps OCR local and auditable while
+supporting vendor, date, line-item, tax and total extraction for the review workflow.
 
 ### Documents page
 
