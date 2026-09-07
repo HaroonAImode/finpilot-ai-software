@@ -6,13 +6,19 @@
 
 ## What I Found in Your Repo (Important — Read This First)
 
-After checking your actual project files, here is the real situation:
+After checking your actual project files, here is the current situation:
 
-**Your current repo is 100% frontend only.**
+**The repository contains both the frontend and the FastAPI backend.**
 
-It is built with React + TypeScript + Vite + TanStack Router and served as a static frontend. All data currently lives in one file — `src/lib/data.ts` — as hardcoded dummy arrays. There is no backend, no database, no API calls. Just a beautiful UI demo.
+The frontend is built with React + TypeScript + Vite + TanStack Router. The backend is an
+implemented FastAPI microservice stack with PostgreSQL, Redis, MinIO, deterministic OCR and
+rules-based invoice extraction. `src/lib/data.ts` remains the frontend fallback/demo dataset;
+the live backend and `backend/infra/docker-compose.yml` are the ground truth for current runtime
+behaviour.
 
-**Your job as backend developer:** Build the FastAPI microservices backend that replaces every piece of dummy data in `data.ts` with real API endpoints, a real database, and real AI logic.
+This document remains the target architecture and implementation guide. Where the current
+implementation differs from the original blueprint, the status notes and service documentation
+take precedence.
 
 This document tells you exactly how to do that — which services to build, what each one does, what folders go where, and how the frontend talks to the backend.
 
@@ -1428,5 +1434,5 @@ Build in this order so you always have a working system:
 *Architecture designed for: Ifrah-Jamil/finpilot-ai-showcase backend*
 *Prepared: August 12, 2026*
 *Frontend: React + TypeScript + Vite + TanStack Router (already built)*
-*Backend: FastAPI + PostgreSQL + RabbitMQ + Redis (to be built)*
+*Backend: FastAPI + PostgreSQL + RabbitMQ + Redis (target architecture; current hand-offs use HTTP and RabbitMQ is not deployed)*
 *Market: Pakistani SMEs | Currency: PKR*

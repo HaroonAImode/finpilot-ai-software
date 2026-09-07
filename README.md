@@ -2,9 +2,8 @@
 
 AI accounting automation for Pakistani SMEs — *automate bookkeeping, extract invoices, analyze finances.*
 
-A React dashboard plus a FastAPI microservice backend. The frontend UI is complete and runs on
-realistic dummy data; the backend is being built service by service, replacing that dummy data
-with real APIs as each one lands.
+A React dashboard plus a FastAPI microservice backend. The frontend UI is complete, and the
+backend services are implemented incrementally with real APIs replacing the original dummy data.
 
 ---
 
