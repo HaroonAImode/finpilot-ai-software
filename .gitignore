@@ -82,6 +82,10 @@ test-receipts/
 # Local project changelog
 CHANGELOG.md
 
+# Private developer handoff and research notes
+docs/DEVELOPER_HANDOFF_PROMPT.md
+docs/research/
+
 # Build output
 build/
 out/
