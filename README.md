@@ -12,30 +12,43 @@ with real APIs as each one lands.
 
 ```
 finpilot-ai-showcase/
-├── frontend/                  React + TanStack Start dashboard
+├── frontend/                  React 19 + TanStack Start dashboard
 │   ├── src/
-│   │   ├── routes/            one file per page
-│   │   ├── components/        UI components (shadcn/ui in components/ui)
-│   │   └── lib/               API clients + dummy data
+│   │   ├── routes/            route pages (dashboard, scanner, records, documents, hr, etc.)
+│   │   ├── components/        shadcn/ui, scanner with camera/crop, review dialog, preview
+│   │   └── lib/               API clients, query hooks, blur detection
 │   ├── package.json
-│   └── vite.config.ts         includes dev proxies to backend services
+│   └── vite.config.ts         dev server and proxy config
 │
 ├── backend/
 │   ├── services/
-│   │   ├── gateway/           The front door — JWT verification (port 8000)
-│   │   ├── auth/              Signup, login, JWT issuance (port 8001)
-│   │   ├── slack-connector/   Slack file discovery service (port 8010)
-│   │   └── email-connector/   Gmail OAuth + mailbox connector (port 8011)
-│   ├── libs/shared/           JWT verification shared by every service
-│   ├── infra/
-│   │   └── docker-compose.yml Postgres + Redis + MinIO + the service
-│   └── docs/
-│       └── api-contracts.md   endpoint reference
+│   │   ├── gateway/           Front door — JWT verification & routing (port 8000)
+│   │   ├── auth/              User authentication & company management (port 8001)
+│   │   ├── invoice-service/   Invoices, receipts, categorization & cashbook (port 8002)
+│   │   ├── transactions-service/ Revenue and expense tracking (port 8003)
+│   │   ├── hr-service/        Employee directory & role assignments (port 8004)
+│   │   ├── procurement-service/   Purchase requests, orders & quotes (port 8005)
+│   │   ├── vendors-service/       Vendor profiles and reconciliation (port 8006)
+│   │   ├── ai-engine/         Deterministic candidate selection & validation (port 8007)
+│   │   ├── paddleocr/         OCR text & bounding box extraction (port 8008)
+│   │   ├── settings-service/      Company and automation settings (port 8009)
+│   │   ├── slack-connector/   Slack file discovery & sync (port 8010)
+│   │   └── email-connector/   Gmail OAuth & mailbox connector (port 8011)
+│   │   ├── documents-service/     Browser-uploaded document library (port 8013)
+│   │   └── reports-service/       Financial report generation (port 8014)
+│   ├── libs/
+│   │   ├── shared/            Shared auth & JWT dependencies
+│   │   ├── ocr/               Image preprocessing & OCR rendering utilities
+│   │   └── invoice_extraction/ Deterministic candidate extraction rules
+│   └── infra/
+│       └── docker-compose.yml Postgres, Redis, MinIO, and core microservices
 │
-└── docs/                      specs, plans, design history
+└── docs/
+    ├── FinPilot_AI_Backend_Architecture_Report (3).md
+    └── superpowers/           Feature specifications and implementation plans
 ```
 
-The layout follows section 6 of `FinPilot_AI_Backend_Architecture_Report`.
+The layout follows section 6 of [`docs/FinPilot_AI_Backend_Architecture_Report (3).md`](docs/FinPilot_AI_Backend_Architecture_Report%20(3).md).
 
 ---
 
@@ -55,51 +68,27 @@ bun run dev
 Opens on `http://localhost:8080`. Every page works standalone against dummy data, so you do
 not need the backend running to browse the UI.
 
-### Backend — Slack Connector
+### Backend Microservices
 
-Brings up Postgres, Redis, MinIO, the API and the Celery worker together:
+Brings up Postgres, Redis, MinIO, and the backend services together:
 
 ```bash
 cd backend/infra
 docker compose up --build -d
-curl http://localhost:8010/health          # → {"status":"ok"}
 ```
 
-First you need real credentials:
+Check health across services:
 
 ```bash
-cd backend/services/slack-connector
-cp .env.example .env
-# then fill in SLACK_CLIENT_ID / SLACK_CLIENT_SECRET / SLACK_SIGNING_SECRET from
-# https://api.slack.com/apps, and generate TOKEN_ENCRYPTION_KEY with:
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+curl http://localhost:8000/health          # Gateway → {"status":"ok"}
+curl http://localhost:8001/health          # Auth → {"status":"ok"}
+curl http://localhost:8002/health          # Invoice Service → {"status":"ok"}
+curl http://localhost:8004/health          # HR Service → {"status":"ok"}
+curl http://localhost:8007/health          # AI Engine → {"status":"ok"}
+curl http://localhost:8008/health          # PaddleOCR → {"status":"ok"}
+curl http://localhost:8010/health          # Slack Connector → {"status":"ok"}
+curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 ```
-
-`.env` is gitignored and must never be committed. Details, local (non-Docker) setup and the
-security model are in
-[`backend/services/slack-connector/README.md`](backend/services/slack-connector/README.md).
-
-### Backend — Email Connector (Phase 1: OAuth foundation)
-
-Same `docker compose up` brings this up too:
-
-```bash
-curl http://localhost:8011/health          # → {"status":"ok"}
-```
-
-Needs a Google Cloud OAuth client before `/connect` can complete a real consent flow:
-
-```bash
-cd backend/services/email-connector
-cp .env.example .env
-# then fill in GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET from Google Cloud Console →
-# APIs & Services → Credentials, and generate TOKEN_ENCRYPTION_KEY the same way as Slack's.
-```
-
-Sync, attachment download, and filtering are not built yet — see
-[`docs/email-connector-plan.md`](docs/email-connector-plan.md) for the phased plan and
-[`backend/services/email-connector/README.md`](backend/services/email-connector/README.md)
-for what's different from the Slack connector this was copied from.
 
 ---
 
@@ -107,26 +96,28 @@ for what's different from the Slack connector this was copied from.
 
 | Service | Port | Status | Powers |
 | --- | --- | --- | --- |
+| **Gateway** | 8000 | ✅ built | The front door — verifies JWTs, injects identity headers, routes to services |
+| **Auth** | 8001 | ✅ built | Signup, login, JWT issuance, company scoping, refresh tokens |
+| **Invoice Service** | 8002 | ✅ built | Scanner uploads, OCR processing, category classification, Saved Records cashbook, Needs Review workflow, PDF export |
+| Transactions | 8003 | ✅ built | Expenses, approvals, dashboard KPIs and trends |
+| **HR Service** | 8004 | ✅ built | Employee directory, role and department assignments |
+| Procurement | 8005 | ✅ built | Purchase requests, purchase orders and vendor quotes |
+| Vendors | 8006 | ✅ built | Vendor management, spend tracking and reconciliation |
+| **AI Engine** | 8007 | ✅ built | Deterministic candidate selection, financial validation, vendor/total extraction |
+| **PaddleOCR** | 8008 | ✅ built | Document OCR text and bounding-box extraction service |
+| **Settings** | 8009 | ✅ built | Company profile, tax configuration and automation settings |
 | **Slack Connector** | 8010 | ✅ built | Documents page, Connected Apps tab, file browser, preview, send-to-scanner |
-| Email Connector | 8011 | 🚧 Gmail OAuth ✅ live-tested with a real account; sync not built yet | Connected Apps tab, Documents page — Email column (connects; no files yet) |
-| WhatsApp Connector | 8012 | planned | Documents page — WhatsApp column |
-| **Auth** | 8001 | ✅ built | Signup, login, JWT issuance, refresh tokens |
-| **Gateway** | 8000 | ✅ built | The front door — verifies JWTs, injects identity, routes to services |
-| Invoice | 8002 | planned | Invoice Scanner, Invoice Generator |
-| Transactions | 8003 | planned | Revenue Manager, Expenses |
-| HR | 8004 | planned | Employees, payroll |
-| Procurement | 8005 | planned | Purchase requests/orders |
-| Vendors | 8006 | planned | Vendor management |
-| AI Engine | 8007 | planned | OCR, AI Assistant, insights |
-| Reports | 8008 | planned | Report generation |
-| Settings | 8009 | planned | Company configuration |
+| **Email Connector** | 8011 | ✅ built | Gmail OAuth integration, mailbox connector and document sync |
+| WhatsApp Connector | 8012 | 🚧 planned | Documents page — WhatsApp channel |
+| **Documents Service** | 8013 | ✅ built | Browser-uploaded document library |
+| **Reports** | 8014 | ✅ built | P&L, cash flow, tax, sales and purchase reports |
 
 Pages whose service is still `planned` render dummy data from `frontend/src/lib/data.ts`.
 
 ### Documents page
 
 `/app/documents` shows every document FinPilot has collected, one column per connector.
-Slack is live; Email and WhatsApp render a "planned" column describing what they will
+Slack and Email are live; WhatsApp renders a "planned" column describing what it will
 collect, rather than inventing documents for a source that does not exist yet.
 
 Each file has a **Preview** button that opens it inside the app — PDFs in the browser's
@@ -212,7 +203,6 @@ pre-existing; don't mass-reformat to "fix" them.
 
 | Document | What it covers |
 | --- | --- |
-| [`CHANGELOG.md`](CHANGELOG.md) | Running project report — what was added, fixed and changed, newest first |
 | [`FinPilot_AI_Backend_Architecture_Report`](FinPilot_AI_Backend_Architecture_Report%20(3).md) | Full architecture: services, folder structure, endpoints, deployment |
 | [`backend/docs/api-contracts.md`](backend/docs/api-contracts.md) | Live endpoint reference |
 | [`backend/services/auth/README.md`](backend/services/auth/README.md) | Auth Service: endpoints, token handling, security decisions |
