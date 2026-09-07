@@ -23,11 +23,30 @@ The first pushed repository commit was:
 
 The latest pushed commit is:
 
-- `4d1bd12` — September 7, 2026 — `docs: update project status and ignore local files`
+- `9480a82` — September 7, 2026 — `docs: add developer setup handoff`
 
 The September 7 push removed `CHANGELOG.md` and `.claude/launch.json` from the repository tree. They are local-only and must not be recreated, staged, or pushed. `.gitignore` is intentionally tracked and must remain tracked.
 
 The initial pushed commit already contains the current backend service directories. Do not assume that a service is missing merely because it was not added in the latest commit. Check the current tree and `backend/infra/docker-compose.yml` before making changes.
+
+### What changed after the first setup
+
+There were no new backend service directories, Docker Compose services, `.env.example`
+templates, frontend API clients, or API-contract files added after the August 31 initial
+push. The current service stack, including Documents, Vendors, Transactions, HR,
+Procurement, Settings, Reports, Slack, Email, AI Engine, and PaddleOCR, was already in
+that initial pushed snapshot.
+
+The later pushes added documentation and repository hygiene only:
+
+- Updated the public README and service status descriptions.
+- Kept `.gitignore` tracked and added rules for local `.claude/` and `CHANGELOG.md`.
+- Removed `CHANGELOG.md` and `.claude/launch.json` from Git tracking.
+- Added this handoff document.
+
+Therefore, an existing developer should not recreate Slack/Email connections, regenerate
+working secrets, or search for a newly added service solely because of the later pushes.
+Pull the latest commit, compare the tracked templates, rebuild the stack, and validate it.
 
 ## Safe update procedure
 
@@ -50,6 +69,55 @@ git ls-files CHANGELOG.md .claude
 ```
 
 The last command should print nothing. Local `.env` files should also remain untracked and ignored.
+
+### Existing developer with a working setup
+
+If the developer already cloned the repository, configured every `.env`, created local
+databases, and connected Slack or Email, use this shorter path:
+
+```powershell
+git fetch origin
+git status --short --branch
+git diff -- backend/services backend/infra frontend
+git pull --ff-only origin main
+```
+
+Before starting containers, verify that the existing configuration files still exist:
+
+```powershell
+Get-ChildItem backend/services -Recurse -Force -Filter .env | Select-Object FullName
+```
+
+Do **not** run the bulk `.env.example` copy command below with `-Force`, and do not replace
+existing `.env` files. This preserves the developer's existing JWT secret, Fernet keys,
+Slack OAuth settings, Google/Microsoft OAuth settings, redirect URIs, and local defaults.
+The `.env.example` files are reference templates, not files to copy over an established
+configuration.
+
+Compare templates only when diagnosing a configuration error:
+
+```powershell
+git diff 4c3d4c2..origin/main -- '*env.example' '*docker-compose.yml' '*api-contracts.md'
+```
+
+For the current repository, that command should show no service, Compose, environment
+template, or API-contract change after the initial push. If a future pull does show a
+template change, merge the new variable into the existing local `.env` manually, preserve
+the developer's existing secret values, and never paste those values into Git, chat, or a
+bug report.
+
+Then rebuild and restart the existing local stack so updated application images are used:
+
+```powershell
+cd backend/infra
+docker compose up --build -d
+docker compose ps
+```
+
+Do not run `docker compose down -v`; that would delete the developer's local databases,
+connector installations, MinIO files, and test state. Do not repeat signup or OAuth
+connection setup unless the existing local data was intentionally reset or a health check
+shows that the connection is missing.
 
 ## Current service map
 
