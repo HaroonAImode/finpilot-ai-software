@@ -93,6 +93,14 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 
 ## Services
 
+### Current stack status
+
+The React + TypeScript frontend and the core FastAPI backend services are currently built and
+available through the Gateway. Invoice scanning uses LiteParse with PaddleOCR, followed by
+deterministic extraction, validation, and human review. Slack, Email, Documents, Vendors,
+Transactions, HR, Procurement, Settings, and Reports are implemented. WhatsApp remains planned;
+RabbitMQ is also not deployed, so current service hand-offs use HTTP.
+
 | Service | Port | Status | Powers |
 | --- | --- | --- | --- |
 | **Gateway** | 8000 | ✅ built | The front door — verifies JWTs, injects identity headers, routes to services |
