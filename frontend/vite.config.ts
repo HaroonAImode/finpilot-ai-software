@@ -4,7 +4,6 @@ import tsConfigPaths from "vite-tsconfig-paths";
 import viteReact from "@vitejs/plugin-react";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
-import basicSsl from "@vitejs/plugin-basic-ssl";
 
 // Vite + TanStack Start config, assembled explicitly. Plugin order matters:
 // tailwind and tsconfig-paths first, then tanstackStart, then the React plugin,
@@ -12,12 +11,13 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 export default defineConfig(({ command, mode }) => {
   // Mirror VITE_* vars into import.meta.env for the SSR/server bundle too, not
   // just the client (Vite only injects them client-side by default).
-  const env = loadEnv(mode, process.cwd(), "VITE_");
+  const env = loadEnv(mode, "..", "VITE_");
   const envDefine = Object.fromEntries(
     Object.entries(env).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]),
   );
 
   return {
+    envDir: "..",
     define: envDefine,
     css: { transformer: "lightningcss" },
     resolve: {
@@ -72,14 +72,6 @@ export default defineConfig(({ command, mode }) => {
         server: { entry: "server" },
       }),
       viteReact(),
-      // Dev-server-only HTTPS with an auto-generated self-signed cert —
-      // required for testing the Camera capture feature (docs/superpowers/
-      // specs/2026-09-05-camera-capture-scanner-design.md) from a phone over
-      // LAN: getUserMedia is blocked by every mobile browser on any non-
-      // HTTPS origin except localhost, so a plain http://<lan-ip>:8080 would
-      // never even prompt for camera permission. Never included in a
-      // production build — that's Cloudflare's own TLS termination's job.
-      ...(command === "serve" ? [basicSsl()] : []),
       // Nitro produces the deployable server build; it only runs at build time.
       ...(command === "build" ? [nitro({ defaultPreset: "cloudflare-module" })] : []),
     ],

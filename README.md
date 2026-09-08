@@ -2,9 +2,8 @@
 
 AI accounting automation for Pakistani SMEs — *automate bookkeeping, extract invoices, analyze finances.*
 
-A React dashboard plus a FastAPI microservice backend. The frontend UI is complete and runs on
-realistic dummy data; the backend is being built service by service, replacing that dummy data
-with real APIs as each one lands.
+A React dashboard plus a FastAPI microservice backend. The frontend UI is complete, and the
+backend services are implemented incrementally with real APIs replacing the dummy data.
 
 ---
 
@@ -54,6 +53,19 @@ The layout follows section 6 of [`docs/FinPilot_AI_Backend_Architecture_Report (
 
 ## Quick start
 
+### Environment
+
+The repository uses one environment file at the root. Create it before starting either the
+frontend or backend:
+
+```bash
+cp .env.example .env
+```
+
+Replace the placeholder secrets in `.env`, especially `JWT_SECRET_KEY` and
+`TOKEN_ENCRYPTION_KEY`. Do not create service-specific `.env` files. Docker Compose loads the
+root file for every backend service, and the frontend reads root `VITE_*` variables.
+
 ### Frontend
 
 Requires [bun](https://bun.sh) (this repo uses `bun.lock`; don't use npm — it will produce a
@@ -77,6 +89,9 @@ cd backend/infra
 docker compose up --build -d
 ```
 
+Run this command with `.env` present at the repository root; Compose resolves the shared file
+from the root regardless of the service being started.
+
 Check health across services:
 
 ```bash
@@ -94,6 +109,14 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 
 ## Services
 
+### Current stack status
+
+The React + TypeScript frontend and the core FastAPI backend services are currently built and
+available through the Gateway. Invoice scanning uses LiteParse with PaddleOCR, followed by
+deterministic extraction, validation, and human review. Slack, Email, Documents, Vendors,
+Transactions, HR, Procurement, Settings, and Reports are implemented. WhatsApp remains planned;
+RabbitMQ is also not deployed, so current service hand-offs use HTTP.
+
 | Service | Port | Status | Powers |
 | --- | --- | --- | --- |
 | **Gateway** | 8000 | ✅ built | The front door — verifies JWTs, injects identity headers, routes to services |
@@ -103,8 +126,8 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 | **HR Service** | 8004 | ✅ built | Employee directory, role and department assignments |
 | Procurement | 8005 | ✅ built | Purchase requests, purchase orders and vendor quotes |
 | Vendors | 8006 | ✅ built | Vendor management, spend tracking and reconciliation |
-| **AI Engine** | 8007 | ✅ built | Deterministic candidate selection, financial validation, vendor/total extraction |
-| **PaddleOCR** | 8008 | ✅ built | Document OCR text and bounding-box extraction service |
+| **AI Engine** | 8007 | ✅ built | LiteParse document pipeline, deterministic invoice extraction, candidate selection and financial validation |
+| **PaddleOCR** | 8008 | ✅ built | Internal OCR server for LiteParse text and bounding-box extraction |
 | **Settings** | 8009 | ✅ built | Company profile, tax configuration and automation settings |
 | **Slack Connector** | 8010 | ✅ built | Documents page, Connected Apps tab, file browser, preview, send-to-scanner |
 | **Email Connector** | 8011 | ✅ built | Gmail OAuth integration, mailbox connector and document sync |
@@ -113,6 +136,12 @@ curl http://localhost:8011/health          # Email Connector → {"status":"ok"}
 | **Reports** | 8014 | ✅ built | P&L, cash flow, tax, sales and purchase reports |
 
 Pages whose service is still `planned` render dummy data from `frontend/src/lib/data.ts`.
+
+### Invoice scanner
+
+Invoice uploads are processed through LiteParse and the internal PaddleOCR service before the
+rules-based extraction and validation pipeline runs. This keeps OCR local and auditable while
+supporting vendor, date, line-item, tax and total extraction for the review workflow.
 
 ### Documents page
 
