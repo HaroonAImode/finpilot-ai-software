@@ -10,6 +10,7 @@ import {
 import { type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth-context";
 import appCss from "../styles.css?url";
 
@@ -126,9 +127,11 @@ function RootComponent() {
           itself — can read session state, and the restore-on-load refresh runs
           exactly once for the whole app rather than per page. */}
       <AuthProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster position="top-right" richColors />
+        <TooltipProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <Toaster position="top-right" richColors />
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
