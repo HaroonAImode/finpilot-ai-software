@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: services/gateway/Dockerfile
     env_file:
-      - ../services/gateway/.env
+      - ../../.env
     environment:
       AUTH_SERVICE_URL: http://auth:8001
       SLACK_CONNECTOR_URL: http://slack-connector:8010
@@ -49,7 +49,7 @@ services:
       context: ..
       dockerfile: services/auth/Dockerfile
     env_file:
-      - ../services/auth/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@auth-db:5432/auth_db
       REDIS_URL: redis://redis:6379/6
@@ -248,7 +248,7 @@ services:
       context: ..
       dockerfile: services/slack-connector/Dockerfile
     env_file:
-      - ../services/slack-connector/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@slack-connector-db:5432/slack_connector_db
       REDIS_URL: redis://redis:6379/3
@@ -278,7 +278,7 @@ services:
       dockerfile: services/slack-connector/Dockerfile
     command: celery -A app.worker.celery_app worker --loglevel=INFO --pool=solo --concurrency=1
     env_file:
-      - ../services/slack-connector/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@slack-connector-db:5432/slack_connector_db
       REDIS_URL: redis://redis:6379/3
@@ -302,7 +302,7 @@ services:
       context: ..
       dockerfile: services/email-connector/Dockerfile
     env_file:
-      - ../services/email-connector/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@email-connector-db:5432/email_connector_db
       REDIS_URL: redis://redis:6379/8
@@ -337,7 +337,7 @@ services:
     # beat into its own single-replica service first.
     command: celery -A app.worker.celery_app worker -B --loglevel=INFO --pool=solo --concurrency=1
     env_file:
-      - ../services/email-connector/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@email-connector-db:5432/email_connector_db
       REDIS_URL: redis://redis:6379/8
@@ -365,7 +365,7 @@ services:
       context: ..
       dockerfile: services/paddleocr/Dockerfile
     env_file:
-      - ../services/paddleocr/.env
+      - ../../.env
     ports:
       - "8008:8008"
 
@@ -380,7 +380,7 @@ services:
       context: ..
       dockerfile: services/ai-engine/Dockerfile
     env_file:
-      - ../services/ai-engine/.env
+      - ../../.env
     environment:
       PADDLEOCR_SERVICE_URL: http://paddleocr:8008
     depends_on:
@@ -398,7 +398,7 @@ services:
       context: ..
       dockerfile: services/invoice-service/Dockerfile
     env_file:
-      - ../services/invoice-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@invoice-service-db:5432/invoice_service_db
       S3_ENDPOINT_URL: http://minio:9000
@@ -435,7 +435,7 @@ services:
       context: ..
       dockerfile: services/documents-service/Dockerfile
     env_file:
-      - ../services/documents-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@documents-service-db:5432/documents_service_db
       S3_ENDPOINT_URL: http://minio:9000
@@ -465,7 +465,7 @@ services:
       context: ..
       dockerfile: services/vendors-service/Dockerfile
     env_file:
-      - ../services/vendors-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@vendors-service-db:5432/vendors_service_db
       INVOICE_SERVICE_URL: http://invoice-service:8002
@@ -488,7 +488,7 @@ services:
       context: ..
       dockerfile: services/transactions-service/Dockerfile
     env_file:
-      - ../services/transactions-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@transactions-service-db:5432/transactions_service_db
       INVOICE_SERVICE_URL: http://invoice-service:8002
@@ -512,7 +512,7 @@ services:
       context: ..
       dockerfile: services/hr-service/Dockerfile
     env_file:
-      - ../services/hr-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@hr-service-db:5432/hr_service_db
       TRANSACTIONS_SERVICE_URL: http://transactions-service:8003
@@ -535,7 +535,7 @@ services:
       context: ..
       dockerfile: services/procurement-service/Dockerfile
     env_file:
-      - ../services/procurement-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@procurement-service-db:5432/procurement_service_db
       # Behind the Gateway, X-Company-ID is written from verified JWT claims,
@@ -557,7 +557,7 @@ services:
       context: ..
       dockerfile: services/settings-service/Dockerfile
     env_file:
-      - ../services/settings-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@settings-service-db:5432/settings_service_db
       # Behind the Gateway, X-Company-ID is written from verified JWT claims,
@@ -581,7 +581,7 @@ services:
       context: ..
       dockerfile: services/reports-service/Dockerfile
     env_file:
-      - ../services/reports-service/.env
+      - ../../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@reports-service-db:5432/reports_service_db
       INVOICE_SERVICE_URL: http://invoice-service:8002

@@ -12,12 +12,13 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 export default defineConfig(({ command, mode }) => {
   // Mirror VITE_* vars into import.meta.env for the SSR/server bundle too, not
   // just the client (Vite only injects them client-side by default).
-  const env = loadEnv(mode, process.cwd(), "VITE_");
+  const env = loadEnv(mode, "..", "VITE_");
   const envDefine = Object.fromEntries(
     Object.entries(env).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]),
   );
 
   return {
+    envDir: "..",
     define: envDefine,
     css: { transformer: "lightningcss" },
     resolve: {

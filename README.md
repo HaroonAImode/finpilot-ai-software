@@ -3,7 +3,7 @@
 AI accounting automation for Pakistani SMEs — *automate bookkeeping, extract invoices, analyze finances.*
 
 A React dashboard plus a FastAPI microservice backend. The frontend UI is complete, and the
-backend services are implemented incrementally with real APIs replacing the original dummy data.
+backend services are implemented incrementally with real APIs replacing the dummy data.
 
 ---
 
@@ -53,6 +53,19 @@ The layout follows section 6 of [`docs/FinPilot_AI_Backend_Architecture_Report (
 
 ## Quick start
 
+### Environment
+
+The repository uses one environment file at the root. Create it before starting either the
+frontend or backend:
+
+```bash
+cp .env.example .env
+```
+
+Replace the placeholder secrets in `.env`, especially `JWT_SECRET_KEY` and
+`TOKEN_ENCRYPTION_KEY`. Do not create service-specific `.env` files. Docker Compose loads the
+root file for every backend service, and the frontend reads root `VITE_*` variables.
+
 ### Frontend
 
 Requires [bun](https://bun.sh) (this repo uses `bun.lock`; don't use npm — it will produce a
@@ -75,6 +88,9 @@ Brings up Postgres, Redis, MinIO, and the backend services together:
 cd backend/infra
 docker compose up --build -d
 ```
+
+Run this command with `.env` present at the repository root; Compose resolves the shared file
+from the root regardless of the service being started.
 
 Check health across services:
 
