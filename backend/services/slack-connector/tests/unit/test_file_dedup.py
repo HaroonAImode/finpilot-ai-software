@@ -157,3 +157,19 @@ async def test_different_slack_files_still_create_separate_rows(db, installation
     await db.commit()
 
     assert await _count(db) == 2
+
+
+@pytest.mark.asyncio
+async def test_tombstone_file_with_null_permalink_is_saved_without_error(db, installation) -> None:
+    service = DiscoveryPersistenceService(db, installation.id)
+    conversation_id = uuid.uuid4()
+
+    row = await service.persist_file(
+        _record(slack_permalink=None, raw_json={"id": "F0BQRLYP5SL", "mode": "tombstone"}),
+        conversation_id,
+        ("Invoices", 0.95, "rule"),
+    )
+    await db.commit()
+
+    assert row.slack_permalink == ""
+    assert await _count(db) == 1

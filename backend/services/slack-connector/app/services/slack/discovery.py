@@ -180,15 +180,18 @@ class DiscoveryService:
         """
         files = []
         for file_obj in message.get("files", []):
-            # Skip external files for download, but still track metadata
+            # Skip external files for download, but still track metadata.
+            # Slack tombstones can appear as a synthetic file object with an id and
+            # no permalink, so normalize the stored value to an empty string rather
+            # than allowing None into the non-null `file.slack_permalink` column.
             file_record = {
                 "slack_file_id": file_obj.get("id"),
                 "channel_id": channel_id,
                 "message_ts": message_ts,
                 "thread_ts": thread_ts,
-                "filename": file_obj.get("name", "unknown"),
+                "filename": file_obj.get("name") or "unknown",
                 "title": file_obj.get("title"),
-                "file_type": file_obj.get("pretty_type", file_obj.get("filetype", "unknown")),
+                "file_type": file_obj.get("pretty_type") or file_obj.get("filetype") or "unknown",
                 "mimetype": file_obj.get("mimetype"),
                 "size": file_obj.get("size", 0),
                 "created_at": file_obj.get("created", message.get("ts")),
@@ -197,7 +200,7 @@ class DiscoveryService:
                 "url_private_download": file_obj.get("url_private_download"),
                 "shared_by_user_id": message.get("user"),
                 "shared_by_user_name": None,  # Will be looked up later
-                "slack_permalink": file_obj.get("permalink_public") or file_obj.get("permalink"),
+                "slack_permalink": (file_obj.get("permalink_public") or file_obj.get("permalink") or ""),
                 "raw_json": file_obj,
             }
             files.append(file_record)
@@ -370,6 +373,8 @@ class DiscoveryPersistenceService:
             )
         )
 
+        normalized_permalink = file_record.get("slack_permalink") or ""
+
         if existing is not None:
             existing.conversation_id = conversation_id
             existing.message_ts = file_record["message_ts"]
@@ -386,7 +391,7 @@ class DiscoveryPersistenceService:
             if shared_by_user is not None:
                 existing.shared_by_user_id = shared_by_user.id
             existing.shared_by_user_name = file_record.get("shared_by_user_name")
-            existing.slack_permalink = file_record.get("slack_permalink", "")
+            existing.slack_permalink = normalized_permalink
             existing.raw_json = file_record.get("raw_json")
             # A human's correction outranks the classifier: re-running a sync must
             # not silently revert a category someone fixed by hand.
@@ -414,7 +419,7 @@ class DiscoveryPersistenceService:
             url_private_download=file_record.get("url_private_download"),
             shared_by_user_id=shared_by_user.id if shared_by_user else None,
             shared_by_user_name=file_record.get("shared_by_user_name"),
-            slack_permalink=file_record.get("slack_permalink", ""),
+            slack_permalink=normalized_permalink,
             category=category,
             category_confidence=confidence,
             category_source=category_source,
