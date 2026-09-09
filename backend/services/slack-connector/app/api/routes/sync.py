@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
+from cryptography.fernet import InvalidToken
 from fastapi import APIRouter, Depends, Form, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select, update
@@ -130,7 +131,14 @@ async def refresh_conversations(
     from app.services.slack.discovery import DiscoveryPersistenceService, DiscoveryService
 
     cipher = TokenCipher(settings.token_encryption_key)
-    bot_token = cipher.decrypt(installation.bot_token_encrypted)
+    try:
+        bot_token = cipher.decrypt(installation.bot_token_encrypted)
+    except InvalidToken as exc:
+        logger.warning("Slack installation token cannot be decrypted; reconnect required")
+        raise HTTPException(
+            status_code=409,
+            detail="Slack connection expired or was created with a different encryption key. Reconnect Slack.",
+        ) from exc
     persistence = DiscoveryPersistenceService(db, installation.id)
 
     try:

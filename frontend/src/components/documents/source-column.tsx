@@ -124,8 +124,12 @@ export function SourceColumn({
       source.fetchDocuments!({ skip: pageParam, limit: PAGE_SIZE, ...(category ? { category } : {}) }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, page) => sum + page.documents.length, 0);
-      return loaded < lastPage.total ? loaded : undefined;
+      const loaded = allPages.reduce(
+        (sum, page) => sum + (Array.isArray(page?.documents) ? page.documents.length : 0),
+        0,
+      );
+      const total = typeof lastPage?.total === "number" ? lastPage.total : 0;
+      return loaded < total ? loaded : undefined;
     },
     // Skipped entirely in grouped mode: each conversation's files load lazily
     // inside its own ConversationGroup instead of one flat fetch here.
