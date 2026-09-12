@@ -153,7 +153,7 @@ function Dashboard() {
   return (
     <>
       <PageHeader
-        title={firstName ? `Good to see you, ${firstName} 👋` : "Good to see you 👋"}
+        title={firstName ? `Good to see you, ${firstName}` : "Good to see you"}
         subtitle={`Here's what happened across your books today — ${today.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.`}
         actions={
           <>
@@ -215,11 +215,16 @@ function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice No</TableHead>
+                  {/* Explicit widths on the short-content columns — an HTML
+                   * table's default layout otherwise stretches every column
+                   * to fill the container, leaving large, empty-looking gaps
+                   * (the same issue found and fixed on the Scanner page's
+                   * own list). */}
+                  <TableHead className="w-40">Invoice No</TableHead>
                   <TableHead>Vendor</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="w-28">Date</TableHead>
+                  <TableHead className="w-32 text-right">Amount</TableHead>
+                  <TableHead className="w-32">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

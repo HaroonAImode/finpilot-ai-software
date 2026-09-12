@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageHeader, StatusBadge } from "@/components/app-shell";
@@ -108,7 +108,7 @@ function currencySuffix(currency: string | null): string {
 
 function confidenceTone(confidence: number): string {
   if (confidence >= 0.75) return "text-success";
-  if (confidence >= 0.4) return "text-warning-foreground dark:text-warning";
+  if (confidence >= 0.4) return "text-warning";
   return "text-destructive";
 }
 
@@ -609,7 +609,7 @@ function Scanner() {
                     {invoice.review_flags.map((flag) => (
                       <span
                         key={flag}
-                        className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning-foreground dark:text-warning"
+                        className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning"
                       >
                         <AlertTriangle className="h-3 w-3" /> {flag.replace(/_/g, " ")}
                       </span>
@@ -871,80 +871,93 @@ function Scanner() {
             </SelectContent>
           </Select>
         </header>
+        {/* A row-based list, not a native `<table>` — an HTML table's default
+         * `table-layout: auto` stretches every column to fill the container's
+         * full width based on its own content, so short columns like Date/
+         * Amount/Status end up with large, empty-looking gaps between them
+         * once the table is wider than its content actually needs (reported
+         * directly: "too much spaced between each column"). A flex row gives
+         * each field exactly the width its content wants, with a real,
+         * intentional gap between them instead — the same row shape Saved
+         * Records' own category list already uses, so a scanned document
+         * reads consistently whether it's viewed from here or there. */}
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-14" />
-                <TableHead>Invoice No</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {listQuery.isPending ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={7}><Skeleton className="h-6 w-full" /></TableCell>
-                  </TableRow>
-                ))
-              ) : listQuery.data?.invoices.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">
-                    {listPage > 0 ? "No more invoices on this page" : "No invoices scanned yet — drop a file above to get started"}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                // Flat, one row per document, newest scan first (the
-                // backend's own default ordering) — deliberately never
-                // grouped by category the way Saved Records groups its own
-                // list; this table stays a plain scan log.
-                listQuery.data?.invoices.map((inv) => (
-                  <TableRow
-                    key={inv.id}
-                    className={`cursor-pointer hover:bg-muted/50 ${inv.id === selectedInvoiceId ? "bg-muted/40" : ""}`}
-                    onClick={() => setSelectedInvoiceId(inv.id)}
-                  >
-                    <TableCell className="px-2">
-                      {/* Same component Saved Records uses for its own row
-                       * thumbnail: hover for a larger preview, click for a
-                       * centered lightbox with a close button and dimmed
-                       * backdrop — smallHoverPreview=true since, unlike
-                       * Records' left pane, nothing here already live-updates
-                       * a big preview panel on row hover. */}
-                      <InvoiceThumbnail invoiceId={inv.id} label={thumbnailLabel(inv)} smallHoverPreview />
-                    </TableCell>
-                    <TableCell className="font-medium">{inv.invoice_number ?? "—"}</TableCell>
-                    <TableCell>{inv.vendor_name ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{inv.invoice_date ?? "—"}</TableCell>
-                    <TableCell className="text-right font-medium">{formatAmount(inv.total)}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={STATUS_LABELS[inv.status]} />
-                    </TableCell>
-                    <TableCell className="px-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link
-                            to="/app/records"
-                            search={{ invoice: inv.id }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            aria-label="Open in Saved Records"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>Open in Saved Records</TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+        <div className="min-w-[640px]">
+          {listQuery.isPending ? (
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : listQuery.data?.invoices.length === 0 ? (
+            <p className="px-5 py-10 text-center text-sm text-muted-foreground">
+              {listPage > 0
+                ? "No more invoices on this page"
+                : "No invoices scanned yet — drop a file above to get started"}
+            </p>
+          ) : (
+            // Flat, one row per document, newest scan first (the backend's
+            // own default ordering) — deliberately never grouped by category
+            // the way Saved Records groups its own list; this stays a plain
+            // scan log.
+            listQuery.data?.invoices.map((inv) => (
+              <div
+                key={inv.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedInvoiceId(inv.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setSelectedInvoiceId(inv.id);
+                }}
+                className={`flex w-full cursor-pointer items-center gap-4 border-t px-5 py-3 text-left transition-colors first:border-t-0 hover:bg-muted/50 ${
+                  inv.id === selectedInvoiceId ? "bg-accent/10" : ""
+                }`}
+              >
+                {/* Same component Saved Records uses for its own row
+                 * thumbnail: hover for a larger preview, click for a
+                 * centered lightbox with a close button and dimmed backdrop
+                 * — smallHoverPreview=true since, unlike Records' left pane,
+                 * nothing here already live-updates a big preview panel on
+                 * row hover. */}
+                <InvoiceThumbnail invoiceId={inv.id} label={thumbnailLabel(inv)} smallHoverPreview />
+
+                <span className="min-w-0 flex-[2]">
+                  <span className="block truncate text-sm font-semibold">
+                    {inv.vendor_name ?? "Unknown vendor"}
+                  </span>
+                  <span className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+                    <span className="truncate">{inv.invoice_number ?? "No invoice #"}</span>
+                    <span aria-hidden>·</span>
+                    <span>{inv.invoice_date ?? "Unknown date"}</span>
+                  </span>
+                </span>
+
+                <span className="w-28 shrink-0 text-right text-sm font-semibold tabular-nums">
+                  {formatAmount(inv.total)}
+                </span>
+
+                <span className="w-36 shrink-0">
+                  <StatusBadge status={STATUS_LABELS[inv.status]} />
+                </span>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to="/app/records"
+                      search={{ invoice: inv.id }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      aria-label="Open in Saved Records"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Open in Saved Records</TooltipContent>
+                </Tooltip>
+              </div>
+            ))
+          )}
+        </div>
         </div>
 
         {listQuery.data && listQuery.data.total > 0 && (

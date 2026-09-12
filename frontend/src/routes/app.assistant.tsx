@@ -42,7 +42,7 @@ function AssistantPage() {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "ai",
-      text: "Hello Ayesha 👋 I've analysed 1,345 documents from your July books. Ask me anything about revenue, expenses, vendors or cash flow.",
+      text: "Hello Ayesha — I've analysed 1,345 documents from your July books. Ask me anything about revenue, expenses, vendors or cash flow.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -139,7 +139,7 @@ function AssistantPage() {
                   ins.tone === "positive"
                     ? "bg-success/12 text-success"
                     : ins.tone === "warning"
-                      ? "bg-warning/15 text-warning-foreground dark:text-warning"
+                      ? "bg-warning/15 text-warning"
                       : "bg-primary/10 text-primary"
                 }`}
               >

@@ -305,13 +305,19 @@ function ExpensesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Category</TableHead>
+                {/* Explicit widths on the short-content columns — an HTML
+                 * table's default layout otherwise stretches every column to
+                 * fill the container, leaving large, empty-looking gaps
+                 * around Date/Method/Status once the table is wider than its
+                 * content needs (the same "too much spacing between columns"
+                 * issue found and fixed on the Scanner page's own list). */}
+                <TableHead className="w-40">Category</TableHead>
                 <TableHead>Vendor</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-28">Date</TableHead>
+                <TableHead className="w-28">Method</TableHead>
+                <TableHead className="w-32 text-right">Amount</TableHead>
+                <TableHead className="w-32">Status</TableHead>
+                <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -17,7 +17,7 @@ import type { Invoice } from "@/lib/invoice-service";
 
 export function confidenceTone(confidence: number): string {
   if (confidence >= 0.75) return "text-success";
-  if (confidence >= 0.4) return "text-warning-foreground dark:text-warning";
+  if (confidence >= 0.4) return "text-warning";
   return "text-destructive";
 }
 

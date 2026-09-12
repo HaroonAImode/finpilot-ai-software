@@ -331,7 +331,7 @@ function VendorsPage() {
                       <SpendCell vendor={v} />
                     </span>
                     {v.rating !== null && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning-foreground dark:text-warning">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning">
                         <Star className="h-3.5 w-3.5 fill-current" /> {v.rating}
                       </span>
                     )}
@@ -350,14 +350,19 @@ function VendorsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                {/* Explicit widths on the short-content columns — an HTML
+                 * table's default layout otherwise stretches every column to
+                 * fill the container, leaving large, empty-looking gaps
+                 * (the same issue found and fixed on the Scanner page's own
+                 * list). */}
                 <TableHead>Vendor</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead className="text-right">Total Spend</TableHead>
-                <TableHead className="text-right">Invoices</TableHead>
-                <TableHead className="text-right">Rating</TableHead>
-                <TableHead>Terms</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-36">Category</TableHead>
+                <TableHead className="w-28">City</TableHead>
+                <TableHead className="w-32 text-right">Total Spend</TableHead>
+                <TableHead className="w-24 text-right">Invoices</TableHead>
+                <TableHead className="w-24 text-right">Rating</TableHead>
+                <TableHead className="w-28">Terms</TableHead>
+                <TableHead className="w-28">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

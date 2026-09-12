@@ -371,7 +371,7 @@ function RevenueManager() {
                     {invoice.review_flags.map((flag) => (
                       <span
                         key={flag}
-                        className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning-foreground dark:text-warning"
+                        className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning"
                       >
                         <AlertTriangle className="h-3 w-3" /> {flag.replace(/_/g, " ")}
                       </span>
@@ -593,11 +593,16 @@ function RevenueManager() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice No</TableHead>
+                {/* Explicit widths on the short-content columns — an HTML
+                 * table's default layout otherwise stretches every column to
+                 * fill the container, leaving large, empty-looking gaps
+                 * (the same issue found and fixed on the Scanner page's own
+                 * list). */}
+                <TableHead className="w-40">Invoice No</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-28">Date</TableHead>
+                <TableHead className="w-32 text-right">Amount</TableHead>
+                <TableHead className="w-32">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

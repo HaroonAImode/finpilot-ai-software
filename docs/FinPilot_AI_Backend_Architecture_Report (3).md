@@ -1,6 +1,6 @@
 # FinPilot AI — Backend Architecture & Project Structure
 ## FastAPI Microservices — Senior Backend Developer Guide
-*Prepared: August 12, 2026 | Repo: Ifrah-Jamil/finpilot-ai-showcase*
+*Prepared: August 12, 2026 · Corrections/status updates added: September 13, 2026*
 
 ---
 
@@ -48,13 +48,32 @@ currently contains:
 | Settings Service | 8009 | **Built** — §5.10's Company profile, Tax configuration and AI Automation toggles, each a lazily-created, company-scoped singleton (no signup-time provisioning hook from Auth Service). The five automation flags are real and persisted, but **not all gate real pipeline behaviour yet** — see [`docs/superpowers/specs/2026-08-29-settings-service-design.md`](docs/superpowers/specs/2026-08-29-settings-service-design.md) §3 for exactly which are enforced today. |
 | Reports Service | 8014 (reassigned — §5.9's original 8008 now belongs to PaddleOCR) | **Built, generation made synchronous** — P&L, Cash Flow, Tax Summary, Sales, and Purchase reports computed live from Invoice/Transactions/Settings Service data on every request (no RabbitMQ/Celery worker: nothing here is OCR-slow). PDF (ReportLab, not WeasyPrint — no native GTK/Pango dependency) and Excel (openpyxl) are rendered on demand from a stored JSON payload, not pre-rendered files. **Balance Sheet is deliberately a simplified cash-position snapshot**, not a full balance sheet — this codebase tracks no fixed assets, receivables/payables, loans, or equity to report on. See [`docs/superpowers/specs/2026-08-29-reports-service-design.md`](docs/superpowers/specs/2026-08-29-reports-service-design.md). |
 
-**Not built:** WhatsApp Connector (8012).
+**Not built:** WhatsApp Connector (8012). **RAG-based AI Chat/Insights** (see the correction box
+below — the current AI Assistant page is a scripted demo, not a live model call).
 
-**RabbitMQ is still not built.** Every internal hand-off in this codebase is a plain HTTP call —
-the Slack connector's `scanner_bridge.py` and Invoice Service's `ai_engine_client.py` both hand off
-over HTTP and degrade to a clear error when the upstream service is down, rather than assuming a
-queue exists to publish to. Any new connector (WhatsApp) should integrate the same way; when
-RabbitMQ is eventually built, every hand-off upgrades together rather than one at a time.
+**RabbitMQ is still not built, and this document's Docker Compose example (§16) and Tech Stack
+table (§14) are both aspirational, not current.** Every internal hand-off in this codebase is a
+plain HTTP call — the Slack connector's `scanner_bridge.py` and Invoice Service's
+`ai_engine_client.py` both hand off over HTTP and degrade to a clear error when the upstream
+service is down, rather than assuming a queue exists to publish to. Any new connector (WhatsApp)
+should integrate the same way; when RabbitMQ is eventually built, every hand-off upgrades together
+rather than one at a time.
+
+**Celery *is* real — but only for the two document connectors' background sync**, not for OCR or
+report generation as originally planned. `slack-connector-worker` and `email-connector-worker`
+(see the real `backend/infra/docker-compose.yml`) run `celery -A app.worker.celery_app worker`
+against Redis as the broker, polling Slack/Gmail on a schedule and downloading new attachments.
+Invoice OCR and PDF/Excel report generation are both synchronous HTTP calls — no queue, no
+background worker — because neither turned out to need one at the load this project runs at.
+
+**No OpenAI/Anthropic call exists anywhere in this codebase — not for OCR (by design, see §5.8's
+correction) and not for the AI Assistant chat page either.** `/app/assistant`'s "Ask AI" chat is
+today a **frontend-only scripted demo**: a fixed lookup table of canned answers to a handful of
+sample questions (`frontend/src/routes/app.assistant.tsx`'s own `canned` object), with a generic
+fallback for anything else typed. There is no chat endpoint, no LLM call, no RAG pipeline, and no
+AI Engine route backing it. This is intentionally called out as **Planned, not built** — see the
+new companion document `docs/finpilot-ai-description.md` for the actual RAG design under
+consideration and why it hasn't been built yet.
 
 Connector build status specifically lives in §5.11's table below, not here — check that table (or
 `docs/selective-sync-plan.md` / `docs/email-connector-plan.md`) for what's current. The current
@@ -884,31 +903,37 @@ The chat page at `/app/assistant` — "Ask AI about your business":
 
 ## 14. Full Tech Stack
 
-| Area | Technology | Why This Choice |
-|---|---|---|
-| **Language** | Python 3.11+ | AI/ML ecosystem, FastAPI, excellent libraries |
-| **Framework** | FastAPI | Async, auto OpenAPI docs, type-safe, fast |
-| **Server** | Uvicorn + Gunicorn | Async ASGI server, multi-worker production |
-| **Database** | PostgreSQL 16 (per service) | Reliable, relational, perfect for financial data |
-| **ORM** | SQLAlchemy 2.0 (async) | Industry standard, async support |
-| **Migrations** | Alembic | Tracks DB schema changes, works with SQLAlchemy |
-| **Validation** | Pydantic v2 | Built into FastAPI, very fast, type-safe |
-| **Cache** | Redis | Rate limiting + AI response cache |
-| **Queue** | RabbitMQ | Async invoice OCR, report generation |
-| **Background Jobs** | Celery + Redis | Report PDF generation (slow background work) |
-| **Auth** | JWT + Argon2 | JWT for stateless auth, Argon2 for password hashing |
-| **OCR** | PyMuPDF (PDF text/rasterization) + Tesseract OCR (scanned/image documents) | Deterministic, local text extraction — see `docs/invoice-ocr-plan.md` |
-| **Invoice structuring** | Rules engine (`backend/libs/invoice_extraction/`) — label anchors, geometric table reconstruction, arithmetic validation | No AI/LLM call — see `docs/invoice-ocr-plan.md` §2a and `docs/research/Invoice_OCR_Rules_Based_Extraction_Report.md` |
-| **AI** | OpenAI GPT-4o or Anthropic Claude | Chat assistant + insights only (§5.8). Not used for invoice OCR/structuring at all — see the two rows above |
-| **File Storage** | MinIO (local dev) / AWS S3 (prod) | Invoice file storage (PDFs, images) |
-| **PDF Generation** | WeasyPrint or ReportLab | Generate P&L, Balance Sheet etc. as PDFs |
-| **Excel Export** | openpyxl | Generate .xlsx reports |
-| **HTTP Client** | httpx (async) | Service-to-service REST calls |
-| **Container** | Docker + Docker Compose | Local dev environment |
-| **CI/CD** | GitHub Actions | One pipeline per service |
-| **Testing** | pytest + httpx + pytest-asyncio | Unit + integration tests |
-| **Tracing** | OpenTelemetry | Follow one request across all services |
-| **Logging** | structlog (JSON output) | Structured logs, easy to search |
+> **This table mixes original plan and current reality — read the Status column.** For the
+> as-built stack with real package/framework versions in one place, see the new companion
+> document [`docs/finpilot-ai-description.md`](finpilot-ai-description.md) §"Technology Stack" —
+> that document is kept in sync with the actual `pyproject.toml`/`package.json` files, this
+> table is not.
+
+| Area | Technology | Status | Why This Choice |
+|---|---|---|---|
+| **Language** | Python 3.11–3.13 | **As planned** | AI/ML ecosystem, FastAPI, excellent libraries |
+| **Framework** | FastAPI | **As planned** | Async, auto OpenAPI docs, type-safe, fast |
+| **Server** | Uvicorn | **As planned** (no Gunicorn layer added) | Async ASGI server |
+| **Database** | PostgreSQL 16 (per service) | **As planned** | Reliable, relational, perfect for financial data |
+| **ORM** | SQLAlchemy 2.0 (async) | **As planned** | Industry standard, async support |
+| **Migrations** | Alembic | **As planned** | Tracks DB schema changes, works with SQLAlchemy |
+| **Validation** | Pydantic v2 | **As planned** | Built into FastAPI, very fast, type-safe |
+| **Cache** | Redis | **As planned** | Rate limiting, Celery broker for the two connectors |
+| **Queue** | ~~RabbitMQ~~ | **Not built** | Every hand-off is plain HTTP instead — see the correction box near the top of this document |
+| **Background Jobs** | Celery + Redis | **Built, narrower than planned** | Real, but only for Slack/Email connector background sync — OCR and report generation are synchronous HTTP, not queued |
+| **Auth** | JWT + Argon2 | **As planned** | JWT for stateless auth, Argon2 for password hashing |
+| **OCR** | LiteParse + PaddleOCR (primary), PyMuPDF + Tesseract (fallback/legacy path) | **Built, evolved past the original plan** | Deterministic, local, no LLM — see `docs/invoice-ocr-plan.md`. PaddleOCR/LiteParse were adopted mid-project for materially better real-world accuracy on messy photos; PyMuPDF+Tesseract kept as an explicit rollback path |
+| **Invoice structuring** | Rules engine (`backend/libs/invoice_extraction/`) — label anchors, geometric table reconstruction, arithmetic validation | **Built, as planned** | No AI/LLM call — see `docs/invoice-ocr-plan.md` §2a and `docs/research/Invoice_OCR_Rules_Based_Extraction_Report.md` |
+| **AI (chat/insights)** | ~~OpenAI GPT-4o or Anthropic Claude~~ | **Not built** | The AI Assistant page is a scripted frontend demo (fixed canned answers) today — no LLM call anywhere in the codebase. See the correction box near the top of this document and `docs/finpilot-ai-description.md` for the real RAG plan |
+| **File Storage** | MinIO (local dev) / S3-compatible in prod | **As planned** | Invoice file storage (PDFs, images) |
+| **PDF Generation** | ReportLab (not WeasyPrint) | **Built, one substitution** | Avoids WeasyPrint's native GTK/Pango system dependency |
+| **Excel Export** | openpyxl | **As planned** | Generate .xlsx reports |
+| **HTTP Client** | httpx (async) | **As planned** | Service-to-service REST calls |
+| **Container** | Docker + Docker Compose | **As planned** | Local dev environment |
+| **CI/CD** | GitHub Actions | **Not yet set up** | Planned, one pipeline per service |
+| **Testing** | pytest + httpx + pytest-asyncio | **Built** | Unit + integration tests, real suites exist per service |
+| **Tracing** | OpenTelemetry | **Not built** | Planned |
+| **Logging** | Python `logging` (structured where added) | **Partially built** | `structlog` was the original plan; services currently use the standard library logger |
 
 ---
 
@@ -955,6 +980,13 @@ JWT_ALGORITHM=HS256
 ---
 
 ## 16. Docker Compose — Local Development
+
+> **This section is the original illustrative example, not the real file.** It predates services
+> added later (PaddleOCR, Documents Service, the Slack/Email connectors and their Celery workers),
+> uses RabbitMQ (not actually deployed), and uses different service/port names than what's really
+> running. For the real, current compose file, open
+> [`backend/infra/docker-compose.yml`](../backend/infra/docker-compose.yml) directly — one command
+> still runs the whole system, it's just a longer file than this example shows.
 
 One command runs the whole system on your laptop.
 
@@ -1431,7 +1463,7 @@ Build in this order so you always have a working system:
 
 ---
 
-*Architecture designed for: Ifrah-Jamil/finpilot-ai-showcase backend*
+*Architecture designed for the FinPilot AI backend*
 *Prepared: August 12, 2026*
 *Frontend: React + TypeScript + Vite + TanStack Router (already built)*
 *Backend: FastAPI + PostgreSQL + RabbitMQ + Redis (target architecture; current hand-offs use HTTP and RabbitMQ is not deployed)*

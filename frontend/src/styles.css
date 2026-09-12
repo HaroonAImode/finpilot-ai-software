@@ -4,6 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------------
+ * Design system — "ink-stained porcelain workshop with jewel-toned
+ * labels" (see UI-theme/DESIGN.md). Warm off-white canvas, ink-black
+ * type, deep muted jewel accents each paired with their own tinted
+ * wash — never bright/saturated SaaS colors, never gradients, never
+ * pure black for body text. Dark mode is this project's own extension
+ * of the same philosophy (the source spec is light-only): the same
+ * warm-neutral relationship inverted onto a deep ink canvas, with each
+ * jewel accent lightened just enough to stay readable as text/icons on
+ * a dark surface while its solid icon-chip fill stays identical in both
+ * themes (a filled chip's contrast never depends on the page behind it).
+ * --------------------------------------------------------------------- */
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -49,99 +62,219 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Category chips — the sidebar/badge categorical system (DESIGN.md's
+   * "Color Categorical System"). Each pairs a deep jewel fill (icon
+   * chips, always this exact value in both themes) with a tinted wash
+   * (light-mode section backgrounds) and a lightened on-dark variant
+   * (dark-mode text/icon color, kept legible on the dark canvas). */
+  --color-category-teal: var(--category-teal);
+  --color-category-teal-wash: var(--category-teal-wash);
+  --color-category-violet: var(--category-violet);
+  --color-category-violet-wash: var(--category-violet-wash);
+  --color-category-amber: var(--category-amber);
+  --color-category-amber-wash: var(--category-amber-wash);
+  --color-category-plum: var(--category-plum);
+  --color-category-plum-wash: var(--category-plum-wash);
+  --color-category-navy: var(--category-navy);
+  --color-category-navy-wash: var(--category-navy-wash);
 }
 
 :root {
-  --radius: 0.9rem;
-  --background: oklch(0.985 0.005 240);
-  --foreground: oklch(0.21 0.03 258);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.03 258);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.03 258);
-  --primary: oklch(0.55 0.19 260);
-  --primary-foreground: oklch(0.99 0.005 240);
-  --secondary: oklch(0.96 0.012 250);
-  --secondary-foreground: oklch(0.3 0.04 258);
-  --muted: oklch(0.965 0.008 250);
-  --muted-foreground: oklch(0.55 0.026 256);
-  --accent: oklch(0.7 0.15 165);
-  --accent-foreground: oklch(0.18 0.04 165);
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.99 0.005 240);
-  --success: oklch(0.68 0.15 162);
-  --success-foreground: oklch(0.99 0.005 240);
-  --warning: oklch(0.78 0.15 75);
-  --warning-foreground: oklch(0.25 0.05 75);
-  --border: oklch(0.92 0.01 250);
-  --input: oklch(0.92 0.01 250);
-  --ring: oklch(0.55 0.19 260);
-  --chart-1: oklch(0.55 0.19 260);
-  --chart-2: oklch(0.7 0.15 165);
-  --chart-3: oklch(0.72 0.14 235);
-  --chart-4: oklch(0.78 0.15 75);
-  --chart-5: oklch(0.62 0.2 300);
-  --sidebar: oklch(0.995 0.003 250);
-  --sidebar-foreground: oklch(0.3 0.03 258);
-  --sidebar-primary: oklch(0.55 0.19 260);
-  --sidebar-primary-foreground: oklch(0.99 0.005 240);
-  --sidebar-accent: oklch(0.96 0.012 250);
-  --sidebar-accent-foreground: oklch(0.3 0.04 258);
-  --sidebar-border: oklch(0.93 0.01 250);
-  --sidebar-ring: oklch(0.55 0.19 260);
+  /* Radius scale — tuned so the codebase's existing rounded-md/rounded-xl/
+   * rounded-2xl usage lands on the spec's own named radii: rounded-lg=12px
+   * (images), rounded-2xl=20px (cards/inputs), rounded-4xl≈28px
+   * (largeSurfaces≈27px). Buttons/badges are set explicitly to 8px/100px on
+   * their own primitives rather than through this chain — see button.tsx,
+   * badge.tsx. */
+  --radius: 12px;
 
-  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.19 260), oklch(0.68 0.15 175));
-  --gradient-soft: linear-gradient(
-    160deg,
-    color-mix(in oklab, oklch(0.55 0.19 260) 10%, transparent),
-    color-mix(in oklab, oklch(0.7 0.15 165) 8%, transparent)
-  );
-  --shadow-soft: 0 1px 2px oklch(0.4 0.05 258 / 0.05), 0 12px 32px -12px oklch(0.4 0.05 258 / 0.18);
-  --shadow-lift: 0 2px 4px oklch(0.4 0.05 258 / 0.06), 0 24px 48px -18px oklch(0.4 0.05 258 / 0.28);
+  /* Neutrals — Warm Canvas page, Paper White cards, Ink Black text (never
+   * pure #000 for text — DESIGN.md's Don't #1). */
+  --background: #f7f7f7;
+  --foreground: #171618;
+  --card: #ffffff;
+  --card-foreground: #171618;
+  --popover: #ffffff;
+  --popover-foreground: #171618;
+
+  /* The system's single filled action color — solid ink, never a second
+   * filled-CTA hue anywhere in the same view (DESIGN.md's Do #1). */
+  --primary: #171618;
+  --primary-foreground: #ffffff;
+
+  --secondary: #efefef;
+  --secondary-foreground: #171618;
+  --muted: #efefef;
+  --muted-foreground: #727578;
+
+  /* Accent = the violet wash pairing (DESIGN.md's default categorical
+   * accent) — used for hover/menu-item backgrounds, foreground is the
+   * deep violet text that sits on top of it. */
+  --accent: #f5f0ff;
+  --accent-foreground: #38296c;
+
+  /* No dedicated error/success/warning hue exists in the source palette
+   * (deliberately — "every chromatic value is a deep muted jewel tone,"
+   * no bright reds/greens). These three map the nearest on-palette jewel
+   * tone to the semantic role rather than importing an off-brand color:
+   * Deep Plum for danger, Deep Teal for success (already the palette's
+   * "positive metric" data-viz hue), Deep Amber for warning. */
+  --destructive: #46122d;
+  --destructive-foreground: #fff1ec;
+  --success: #004d60;
+  --success-foreground: #defafe;
+  --warning: #6c4800;
+  --warning-foreground: #fff6e1;
+
+  --border: #efefef;
+  --input: #efefef;
+  --ring: #171618;
+
+  --chart-1: #38296c;
+  --chart-2: #004d60;
+  --chart-3: #6c4800;
+  --chart-4: #46122d;
+  --chart-5: #0f1c41;
+
+  /* Light mode's own sidebar, exactly as DESIGN.md's own product-screenshot
+   * component spec describes it: "a left sidebar with 13px Inter 500 items
+   * in #171618" — dark ink text on a light surface, not an inverted dark
+   * rail. Pure white (one shade brighter than the #f7f7f7 canvas) so it
+   * still reads as its own surface, the same relationship a white card has
+   * to the canvas everywhere else in this system — never an invented
+   * dark-UI panel the spec doesn't call for. */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #171618;
+  --sidebar-primary: #171618;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f0ff;
+  --sidebar-accent-foreground: #38296c;
+  --sidebar-muted-foreground: #727578;
+  --sidebar-border: #efefef;
+  --sidebar-ring: #171618;
+
+  --category-teal: #004d60;
+  --category-teal-wash: #defafe;
+  --category-violet: #38296c;
+  --category-violet-wash: #f5f0ff;
+  --category-amber: #6c4800;
+  --category-amber-wash: #fff6e1;
+  --category-plum: #46122d;
+  --category-plum-wash: #fff1ec;
+  --category-navy: #0f1c41;
+  --category-navy-wash: #cfeff8;
+
+  /* Every call site that references these as a `background-image` pairs it
+   * with primary-foreground/primary text — a mono-color `linear-gradient`
+   * renders perfectly flat (zero visible gradient, satisfying the "no
+   * gradients" rule) while still resolving to a real, visible fill instead
+   * of `none`, which would leave the element with no background at all. */
+  --gradient-brand: linear-gradient(var(--color-primary), var(--color-primary));
+  --gradient-soft: linear-gradient(var(--color-accent), var(--color-accent));
+  --shadow-soft: var(--shadow-card);
+  --shadow-lift: var(--shadow-secondary);
+
+  /* DESIGN.md's own elevation system — layered warm-gray blur under white
+   * cards on the warm canvas, never a hard border on an elevated surface. */
+  --shadow-card: 0px 2px 15px 0px rgba(239, 239, 239, 0.55);
+  --shadow-secondary: 0px 0px 0px 1px rgba(23, 24, 26, 0.1), 0px 8px 16px 0px rgba(23, 24, 26, 0.03);
+  --shadow-frame: 0px 0px 0px 1px rgba(23, 24, 26, 0.1), 0px 16px 16px 0px rgba(23, 24, 26, 0.03),
+    0px 6px 12px 0px rgba(23, 24, 26, 0.05);
+  --shadow-cta: 0px 1px 2px 0px rgba(0, 0, 0, 0.08), 0px 0.5px 0px 0px rgba(0, 0, 0, 0.12);
 }
 
+/* Dark mode — this project's own companion to the light spec, same
+ * philosophy carried through: a warm-neutral relationship (never pure
+ * black, never pure white) on a deep ink canvas instead of the warm
+ * canvas, jewel accents lightened only where they sit as text/icon color
+ * directly on that dark canvas so nothing reads as low-contrast or
+ * invisible; icon-chip fills stay the identical deep hue in both themes. */
 .dark {
-  --background: oklch(0.19 0.025 262);
-  --foreground: oklch(0.97 0.008 250);
-  --card: oklch(0.235 0.028 262);
-  --card-foreground: oklch(0.97 0.008 250);
-  --popover: oklch(0.235 0.028 262);
-  --popover-foreground: oklch(0.97 0.008 250);
-  --primary: oklch(0.68 0.16 262);
-  --primary-foreground: oklch(0.16 0.03 262);
-  --secondary: oklch(0.29 0.03 262);
-  --secondary-foreground: oklch(0.96 0.01 250);
-  --muted: oklch(0.28 0.028 262);
-  --muted-foreground: oklch(0.72 0.025 256);
-  --accent: oklch(0.74 0.14 165);
-  --accent-foreground: oklch(0.18 0.04 165);
-  --destructive: oklch(0.68 0.2 25);
-  --destructive-foreground: oklch(0.98 0.005 240);
-  --success: oklch(0.74 0.14 162);
-  --success-foreground: oklch(0.16 0.03 262);
-  --warning: oklch(0.82 0.14 75);
-  --warning-foreground: oklch(0.2 0.04 75);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.68 0.16 262);
-  --chart-1: oklch(0.68 0.16 262);
-  --chart-2: oklch(0.74 0.14 165);
-  --chart-3: oklch(0.76 0.13 235);
-  --chart-4: oklch(0.82 0.14 75);
-  --chart-5: oklch(0.7 0.18 300);
-  --sidebar: oklch(0.215 0.026 262);
-  --sidebar-foreground: oklch(0.94 0.01 250);
-  --sidebar-primary: oklch(0.68 0.16 262);
-  --sidebar-primary-foreground: oklch(0.16 0.03 262);
-  --sidebar-accent: oklch(0.29 0.03 262);
-  --sidebar-accent-foreground: oklch(0.96 0.01 250);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.16 262);
+  --background: #121116;
+  --foreground: #f3f1ee;
+  --card: #1c1b21;
+  --card-foreground: #f3f1ee;
+  --popover: #1f1e25;
+  --popover-foreground: #f3f1ee;
 
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -12px oklch(0 0 0 / 0.55);
-  --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.35), 0 24px 48px -18px oklch(0 0 0 / 0.6);
+  /* Inverted CTA — a solid ink button would vanish on a dark canvas, so
+   * dark mode's single filled action flips to paper-on-ink, the same
+   * "one strong, unambiguous fill" principle the light mode uses. */
+  --primary: #f3f1ee;
+  --primary-foreground: #171618;
+
+  --secondary: #29282f;
+  --secondary-foreground: #f3f1ee;
+  --muted: #232228;
+  --muted-foreground: #a5a1a8;
+
+  --accent: #2a2438;
+  --accent-foreground: #c9b8ff;
+
+  /* This codebase uses these three tokens two different ways: a solid-fill
+   * button/icon-chip (bg-X + text-X-foreground) AND a status badge
+   * (bg-X/12 + text-X + border-X/25, e.g. StatusBadge in app-shell.tsx) —
+   * the badge pattern needs X ITSELF to read as plain text against the
+   * page's own dark canvas, not just against its own fill. A deep, dark
+   * jewel tone (correct for light mode, where it sits on a light canvas)
+   * would be near-invisible as dark-on-dark text here, so dark mode swaps
+   * which value is light vs deep: X becomes the bright, legible tone,
+   * X-foreground becomes the deep tone used as text on top of that fill. */
+  --destructive: #ff9db3;
+  --destructive-foreground: #3a1420;
+  --success: #7fd8e6;
+  --success-foreground: #0e2f38;
+  --warning: #f0c265;
+  --warning-foreground: #2e2308;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.07);
+  --ring: #f3f1ee;
+
+  --chart-1: #b0a0ff;
+  --chart-2: #5fd0e6;
+  --chart-3: #f0c265;
+  --chart-4: #ff9db3;
+  --chart-5: #93a8ff;
+
+  /* Dark mode's own sidebar is left close to the page canvas — already a
+   * dark rail against a dark page, which reads fine and doesn't need the
+   * light-mode "contrasting dark rail" treatment above. */
+  --sidebar: #17161b;
+  --sidebar-foreground: #f3f1ee;
+  --sidebar-primary: #f3f1ee;
+  --sidebar-primary-foreground: #171618;
+  --sidebar-accent: #232228;
+  --sidebar-accent-foreground: #f3f1ee;
+  --sidebar-muted-foreground: #a5a1a8;
+  --sidebar-border: rgba(255, 255, 255, 0.09);
+  --sidebar-ring: #f3f1ee;
+
+  /* Icon-chip fills — identical deep hues in both themes (self-contained
+   * contrast: white glyph on a solid deep chip, independent of page bg). */
+  --category-teal: #004d60;
+  --category-teal-wash: #123844;
+  --category-violet: #38296c;
+  --category-violet-wash: #241d3d;
+  --category-amber: #6c4800;
+  --category-amber-wash: #362a10;
+  --category-plum: #46122d;
+  --category-plum-wash: #33141f;
+  --category-navy: #0f1c41;
+  --category-navy-wash: #1a2740;
+
+  --shadow-card: 0px 1px 2px 0px rgba(0, 0, 0, 0.4), 0px 12px 28px -8px rgba(0, 0, 0, 0.55);
+  --shadow-secondary: 0px 0px 0px 1px rgba(255, 255, 255, 0.08), 0px 8px 16px 0px rgba(0, 0, 0, 0.35);
+  --shadow-frame: 0px 0px 0px 1px rgba(255, 255, 255, 0.08), 0px 16px 24px 0px rgba(0, 0, 0, 0.4);
+  --shadow-cta: 0px 1px 2px 0px rgba(0, 0, 0, 0.5), 0px 0.5px 0px 0px rgba(255, 255, 255, 0.06);
+  --gradient-brand: linear-gradient(var(--color-primary), var(--color-primary));
+  --gradient-soft: linear-gradient(var(--color-accent), var(--color-accent));
+  --shadow-soft: var(--shadow-card);
+  --shadow-lift: var(--shadow-secondary);
 }
 
 @layer base {
@@ -153,47 +286,130 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.62;
+    letter-spacing: -0.1px;
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Display type — Eudoxus Sans's documented fallback (Plus Jakarta Sans
+   * 800), always heavy weight with tight tracking; Inter never appears
+   * above 27px, matching the spec's own pairing rule. */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
+    font-weight: 800;
     letter-spacing: -0.02em;
+  }
+
+  /* A thin, theme-aware scrollbar everywhere — replaces the browser's
+   * default thick/grey one (jarring against this palette, and the exact
+   * complaint about the sidebar's own scroll track). Firefox via the
+   * `scrollbar-*` properties, Chromium/WebKit via ::-webkit-scrollbar. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 100px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted-foreground);
+    background-clip: content-box;
+  }
+
+  /* The sidebar's own scroll track sits on the dark rail (not the page
+   * canvas), where the neutral --border token would be almost invisible
+   * — it needs its own lighter, sidebar-scoped thumb color. */
+  .sidebar-scroll {
+    scrollbar-color: var(--color-sidebar-border) transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.32);
   }
 }
 
 @utility surface {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
 }
 
 @utility glass {
-  background-color: color-mix(in oklab, var(--color-card) 70%, transparent);
+  background-color: color-mix(in oklab, var(--color-card) 72%, transparent);
   backdrop-filter: blur(18px) saturate(150%);
   border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
 }
 
-@utility gradient-brand {
-  background-image: var(--gradient-brand);
+/* Category chip — the small colored square icon badge the sidebar and
+ * category-tagged cards use (DESIGN.md's categorical system made
+ * concrete). `data-category` picks which jewel tone; the chip's own
+ * fill/icon-color pair is always self-contained contrast. */
+@utility category-chip {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+}
+[data-category="teal"] {
+  background-color: var(--color-category-teal);
+}
+[data-category="violet"] {
+  background-color: var(--color-category-violet);
+}
+[data-category="amber"] {
+  background-color: var(--color-category-amber);
+}
+[data-category="plum"] {
+  background-color: var(--color-category-plum);
+}
+[data-category="navy"] {
+  background-color: var(--color-category-navy);
 }
 
+@utility gradient-brand {
+  background-image: none;
+  background-color: var(--color-primary);
+}
+
+/* Headline/stat emphasis — a solid accent color, never a gradient-clip
+ * effect (banned by the spec). Reuses accent-foreground specifically
+ * because that token is already tuned to stay readable against each
+ * theme's own canvas (deep violet on light, lightened lavender on dark) —
+ * not a fixed hex that could read fine in one theme and wash out in the
+ * other. */
 @utility text-gradient {
-  background-image: var(--gradient-brand);
-  background-clip: text;
-  color: transparent;
+  color: var(--color-accent-foreground);
 }
 
 @utility lift {
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-secondary);
   }
 }

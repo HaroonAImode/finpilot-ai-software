@@ -449,7 +449,7 @@ function EmployeesPage() {
           ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
           : summaryCards.map((s) => (
               <div key={s.label} className="surface lift p-5">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent/15 text-accent-foreground dark:text-accent">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent/15 text-accent-foreground">
                   <Wallet className="h-4.5 w-4.5" />
                 </span>
                 <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">{s.label}</p>
@@ -471,15 +471,20 @@ function EmployeesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {/* Explicit widths on the short-content columns — an HTML
+                   * table's default layout otherwise stretches every column
+                   * to fill the container, leaving large, empty-looking gaps
+                   * (the same issue found and fixed on the Scanner page's
+                   * own list). */}
                   <TableHead>Employee</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Salary</TableHead>
-                  <TableHead className="text-right">Bonus</TableHead>
-                  <TableHead className="text-right">Deductions</TableHead>
-                  <TableHead className="text-right">Net Salary</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-36">Department</TableHead>
+                  <TableHead className="w-32">Role</TableHead>
+                  <TableHead className="w-28 text-right">Salary</TableHead>
+                  <TableHead className="w-24 text-right">Bonus</TableHead>
+                  <TableHead className="w-28 text-right">Deductions</TableHead>
+                  <TableHead className="w-28 text-right">Net Salary</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

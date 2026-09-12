@@ -208,6 +208,24 @@ function numOrNull(text: string): number | null {
  *  trigger keeps a click here from also opening that panel — same
  *  reasoning, and the same technique, as the row's own 3-dot menu button
  *  right next to it. */
+/** Cash and Online are visually distinct tags, not two instances of the
+ *  same "set" color — cash (amber) vs. online (teal), so a glance at the
+ *  row tells you which without reading the word.
+ *
+ *  Deliberately reuses `warning`/`success` rather than the sidebar's
+ *  category-chip tokens: those chip tokens are fixed deep-jewel fills in
+ *  BOTH themes (correct for a solid chip with a white icon on top, which
+ *  never needs to adapt), but here the color IS the text, sitting on its
+ *  own faint tint — it needs a token that's deep in light mode and
+ *  bright in dark mode, which is exactly what warning/success already
+ *  are (see styles.css's dark-mode swap comment). Using the chip tokens
+ *  here produced dark amber text on a dark amber tint in dark mode —
+ *  nearly invisible, confirmed live. */
+const PAYMENT_METHOD_TAG_CLASS: Record<PaymentMethod, string> = {
+  cash: "border-warning/30 bg-warning/12 text-warning",
+  bank: "border-success/30 bg-success/12 text-success",
+};
+
 function InlinePaymentMethodSelect({
   value,
   onChange,
@@ -225,7 +243,7 @@ function InlinePaymentMethodSelect({
         title={value ? "Change payment method" : "Set payment method — Cash or Online"}
         className={`h-6 w-fit shrink-0 gap-1 rounded-full border px-2.5 text-[11px] font-medium shadow-none focus:ring-1 focus:ring-ring focus:ring-offset-0 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-70 ${
           value
-            ? "border-accent/40 bg-accent/10 text-accent-foreground dark:text-accent"
+            ? PAYMENT_METHOD_TAG_CLASS[value]
             : "border-dashed border-muted-foreground/50 bg-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground"
         }`}
       >
@@ -261,11 +279,18 @@ function CategorySection({
   onChangeCategory,
   onRemove,
   onChangePaymentMethod,
+  compact = false,
 }: {
   category: string | null;
   rows: InvoiceListItem[];
   summary: CategorySummary | undefined;
   selectedId: string | null;
+  /** True once a record is pinned open — the categories list is then
+   *  acting as a compact browser beside the full detail panel, not the
+   *  only place to edit a row, so it hides the inline payment-method pill
+   *  (still editable in the details panel) to give the vendor name back
+   *  the room it needs instead of truncating to a couple of letters. */
+  compact?: boolean;
   /** Something is already pinned in the right pane. Hovering a *different*
    *  row must not swap that whole pane out from under the user (real layout
    *  thrash, reported directly) — so in this state, the row's own hover
@@ -301,7 +326,7 @@ function CategorySection({
             {summary ? summary.count : rows.length}
           </span>
         </button>
-        <span className="shrink-0 text-base font-bold tabular-nums text-accent-foreground dark:text-accent">
+        <span className="shrink-0 text-base font-bold tabular-nums text-accent-foreground">
           {summary ? (
             money(summary.total)
           ) : (
@@ -379,11 +404,16 @@ function CategorySection({
                *  it read as description text nobody would think to click.
                *  Styled as a pill (dashed border while unset) specifically
                *  so it reads as a control, the same convention an empty
-               *  "+ Add tag" chip uses elsewhere on the web. */}
-              <InlinePaymentMethodSelect
-                value={row.payment_method}
-                onChange={(method) => onChangePaymentMethod(row.id, method)}
-              />
+               *  "+ Add tag" chip uses elsewhere on the web. Hidden in
+               *  `compact` mode (see the prop's own docstring) — the vendor
+               *  name needs that room more, and it's still editable in the
+               *  details panel this row opens. */}
+              {!compact && (
+                <InlinePaymentMethodSelect
+                  value={row.payment_method}
+                  onChange={(method) => onChangePaymentMethod(row.id, method)}
+                />
+              )}
               <span className="shrink-0 text-sm font-semibold tabular-nums">
                 {row.total !== null ? money(row.total) : "—"}
               </span>
@@ -483,7 +513,39 @@ function WindowsCloseButton({ onClose }: { onClose: () => void }) {
   );
 }
 
-function RecordDetail({ invoiceId, onClose }: { invoiceId: string; onClose: () => void }) {
+/** The middle column — just the document, full-size and unobstructed. Its
+ *  own `useQuery` shares React Query's cache/dedupe with RecordEditForm's
+ *  identical `["invoice", invoiceId]` key, so splitting this out of the old
+ *  combined RecordDetail costs no extra network round-trip — both panes
+ *  mounting for the same record fetch once. */
+function RecordPreviewPane({ invoiceId, onClose }: { invoiceId: string; onClose: () => void }) {
+  const invoiceQuery = useQuery({
+    queryKey: ["invoice", invoiceId],
+    queryFn: () => getInvoice(invoiceId),
+  });
+
+  return (
+    <div className="relative flex h-full flex-col">
+      <WindowsCloseButton onClose={onClose} />
+      {invoiceQuery.isLoading && <Skeleton className="h-full w-full rounded-xl" />}
+      {invoiceQuery.isError && (
+        <p className="text-sm text-muted-foreground">Could not load this document.</p>
+      )}
+      {invoiceQuery.data && (
+        <InvoiceDocumentPreview
+          invoiceId={invoiceQuery.data.id}
+          filename={invoiceQuery.data.filename}
+          pageCount={invoiceQuery.data.page_dimensions.length || 1}
+          fill
+        />
+      )}
+    </div>
+  );
+}
+
+/** The right column — the editable fields, on their own rather than stacked
+ *  under the document (the "[categories][preview][details]" layout). */
+function RecordEditForm({ invoiceId }: { invoiceId: string }) {
   const queryClient = useQueryClient();
   const invoiceQuery = useQuery({
     queryKey: ["invoice", invoiceId],
@@ -512,8 +574,8 @@ function RecordDetail({ invoiceId, onClose }: { invoiceId: string; onClose: () =
   if (invoiceQuery.isLoading || !active) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-72 w-full rounded-xl" />
         <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
       </div>
     );
@@ -531,13 +593,11 @@ function RecordDetail({ invoiceId, onClose }: { invoiceId: string; onClose: () =
     setForm({ ...active, [key]: value });
 
   return (
-    <div className="relative flex flex-col gap-5">
-      <WindowsCloseButton onClose={onClose} />
-      <InvoiceDocumentPreview
-        invoiceId={invoice.id}
-        filename={invoice.filename}
-        pageCount={invoice.page_dimensions.length || 1}
-      />
+    <div className="flex flex-col gap-5">
+      <div>
+        <p className="font-display text-lg font-bold">Record details</p>
+        <p className="text-xs text-muted-foreground">Review and edit before it's final.</p>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 space-y-1.5">
@@ -701,7 +761,7 @@ function MonthlySummaryStrip({
 }) {
   return (
     <div className="surface mt-4 p-4">
-      <p className="mb-3 font-display text-lg font-extrabold uppercase tracking-wide text-accent">
+      <p className="mb-3 font-display text-lg font-extrabold uppercase tracking-wide text-accent-foreground">
         {month ? formatMonthLabel(month) : "All Time"}
       </p>
       {isLoading || !summary ? (
@@ -731,7 +791,7 @@ function Overview({ summaries }: { summaries: CategorySummary[] }) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 py-10 text-center">
-      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-accent/15 text-accent-foreground dark:text-accent">
+      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-accent/15 text-accent-foreground">
         <FolderOpen className="h-6 w-6" />
       </span>
       <div>
@@ -937,7 +997,11 @@ function SavedRecords() {
         month={selectedMonth}
       />
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
+      <div
+        className={`mt-6 grid grid-cols-1 gap-4 ${
+          selectedId ? "lg:grid-cols-[380px_minmax(340px,1fr)_300px]" : "lg:grid-cols-[420px_1fr]"
+        }`}
+      >
         <section className="surface flex flex-col overflow-hidden">
           <header className="flex items-center justify-between border-b px-4 py-3">
             <div>
@@ -950,7 +1014,7 @@ function SavedRecords() {
                     : "Loading…"}
               </p>
             </div>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent/15 text-accent-foreground dark:text-accent">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent/15 text-accent-foreground">
               <Wallet className="h-4 w-4" />
             </span>
           </header>
@@ -1013,6 +1077,7 @@ function SavedRecords() {
                 summary={summaryQuery.data?.find((s) => s.category === category)}
                 selectedId={selectedId}
                 hasPinned={Boolean(selectedId)}
+                compact={Boolean(selectedId)}
                 onSelect={(id) => {
                   setSelectedId(id);
                   setHoveredId(null);
@@ -1055,45 +1120,59 @@ function SavedRecords() {
          *  audit) — it only *looked* pinned before because the whole page
          *  never needed to scroll; now that a long categories list can make
          *  it scroll, this needs to say so explicitly. */}
-        <section className="surface self-start overflow-y-auto p-6 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)]">
-          {/* The *actual* root cause of "clicking another entry keeps
-           *  showing the previous one": once something is pinned, hover
-           *  handlers are removed from every row (see CategorySection's own
-           *  `hasPinned ? {} : {...}` above) — so `hoveredId` freezes at
-           *  whatever was last hovered *before* the first click and never
-           *  updates again. The old condition here (`hoveredId !==
-           *  selectedId`) then stayed true forever for every subsequent
-           *  click that landed on a different row than that frozen hover,
-           *  so it kept rendering the stale QuickLookPreview instead of the
-           *  just-selected RecordDetail. `key={selectedId}` (below) fixed a
-           *  *different* leak — this is the one that actually matched the
-           *  report. A pinned selection must always win, full stop: hover
-           *  only gets a say while nothing is pinned yet. */}
-          {!selectedId && hoveredRow ? (
-            <QuickLookPreview row={hoveredRow} />
-          ) : selectedId ? (
-            // `key` forces a fresh RecordDetail (and fresh internal `form`
-            // state) per record. Without it, clicking a different row while
-            // an unsaved edit was still in `form` on the old one leaked that
-            // edit's values onto the newly-selected record — the "clicking
-            // another entry keeps showing the previous one" bug.
-            <RecordDetail
-              key={selectedId}
-              invoiceId={selectedId}
-              onClose={() => {
-                setSelectedId(null);
-                setHoveredId(null);
-              }}
-            />
-          ) : summaryQuery.data ? (
-            <Overview summaries={summaryQuery.data} />
-          ) : (
-            <div className="space-y-4">
-              <Skeleton className="h-40 w-full rounded-xl" />
-              <Skeleton className="h-6 w-1/3" />
-            </div>
-          )}
-        </section>
+        {/* Selecting a record splits the right side into two columns —
+         *  [preview][details] — rather than stacking the document above the
+         *  edit form in one panel: the document stays full-size and
+         *  unobstructed while the fields sit beside it, not below a scroll
+         *  away. Hovering (not yet clicked) and the empty/overview states
+         *  don't need a details column at all, so they keep the original
+         *  2-column layout (see the grid's own `selectedId ? ... : ...`
+         *  column template above). */}
+        {selectedId ? (
+          <>
+            <section className="surface flex flex-col self-start overflow-hidden p-4 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)]">
+              {/* `key` forces a fresh pane per record — same reasoning as
+               *  RecordEditForm's own key below. */}
+              <RecordPreviewPane
+                key={selectedId}
+                invoiceId={selectedId}
+                onClose={() => {
+                  setSelectedId(null);
+                  setHoveredId(null);
+                }}
+              />
+            </section>
+            <section className="surface self-start overflow-y-auto p-6 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)]">
+              {/* `key` forces a fresh RecordEditForm (and fresh internal
+               *  `form` state) per record. Without it, clicking a different
+               *  row while an unsaved edit was still in `form` on the old
+               *  one leaked that edit's values onto the newly-selected
+               *  record — the "clicking another entry keeps showing the
+               *  previous one" bug. */}
+              <RecordEditForm key={selectedId} invoiceId={selectedId} />
+            </section>
+          </>
+        ) : (
+          <section className="surface self-start overflow-y-auto p-6 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)]">
+            {/* The *actual* root cause of "clicking another entry keeps
+             *  showing the previous one": once something is pinned, hover
+             *  handlers are removed from every row (see CategorySection's
+             *  own `hasPinned ? {} : {...}` above) — so `hoveredId` freezes
+             *  at whatever was last hovered *before* the first click and
+             *  never updates again. A pinned selection must always win,
+             *  full stop: hover only gets a say while nothing is pinned. */}
+            {hoveredRow ? (
+              <QuickLookPreview row={hoveredRow} />
+            ) : summaryQuery.data ? (
+              <Overview summaries={summaryQuery.data} />
+            ) : (
+              <div className="space-y-4">
+                <Skeleton className="h-40 w-full rounded-xl" />
+                <Skeleton className="h-6 w-1/3" />
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </TooltipProvider>
   );

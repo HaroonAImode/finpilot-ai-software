@@ -313,7 +313,7 @@ export function CameraCaptureDialog({
               </div>
             )}
             {retakeReason && (
-              <p className="rounded-xl bg-warning/15 p-3 text-sm font-medium text-warning-foreground dark:text-warning">
+              <p className="rounded-xl bg-warning/15 p-3 text-sm font-medium text-warning">
                 {retakeReason}
               </p>
             )}

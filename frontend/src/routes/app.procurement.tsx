@@ -378,7 +378,7 @@ function ProcurementPage() {
   const s = statsQuery.data;
   const cards = s
     ? [
-        { label: "Pending Procurement", value: s.pending_count, note: `${money(s.pending_amount_pkr)} committed`, icon: Clock, tone: "text-warning-foreground dark:text-warning bg-warning/15" },
+        { label: "Pending Procurement", value: s.pending_count, note: `${money(s.pending_amount_pkr)} committed`, icon: Clock, tone: "text-warning bg-warning/15" },
         { label: "Completed", value: s.completed_count, note: "Orders delivered", icon: CheckCircle2, tone: "text-success bg-success/12" },
         { label: "Delayed", value: s.delayed_count, note: "Past expected delivery", icon: Truck, tone: "text-primary bg-primary/12" },
         { label: "Cancelled", value: s.cancelled_count, note: "Orders cancelled", icon: XCircle, tone: "text-destructive bg-destructive/12" },
@@ -416,12 +416,17 @@ function ProcurementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {/* Explicit widths on the short-content columns — an HTML
+                   * table's default layout otherwise stretches every column
+                   * to fill the container, leaving large, empty-looking gaps
+                   * (the same issue found and fixed on the Scanner page's
+                   * own list). */}
                   <TableHead>Item</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Requester</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-36">Department</TableHead>
+                  <TableHead className="w-36">Requester</TableHead>
+                  <TableHead className="w-32 text-right">Amount</TableHead>
+                  <TableHead className="w-32">Status</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -488,9 +493,9 @@ function ProcurementPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Vendor</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Delivery</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="w-32 text-right">Amount</TableHead>
+                  <TableHead className="w-32">Delivery</TableHead>
+                  <TableHead className="w-32">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

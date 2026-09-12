@@ -592,10 +592,15 @@ function InvoiceGenerator() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice #</TableHead>
+                {/* Explicit widths on the short-content columns — an HTML
+                 * table's default layout otherwise stretches every column to
+                 * fill the container, leaving large, empty-looking gaps
+                 * (the same issue found and fixed on the Scanner page's own
+                 * list). */}
+                <TableHead className="w-40">Invoice #</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="w-28">Date</TableHead>
+                <TableHead className="w-32 text-right">Total</TableHead>
                 <TableHead className="w-24" />
               </TableRow>
             </TableHeader>
